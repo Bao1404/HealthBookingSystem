@@ -1,0 +1,360 @@
+﻿@{
+    Layout = "_LayoutUser";
+    ViewData["Title"] = "List of doctors";
+}
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <header class="header">
+        <h1 class="header-title">Find Doctors</h1>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search doctors, specialties, or locations..." id="searchInput">
+        </div>
+        <div class="header-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            <div class="user-profile" onclick="window.location.href='profile.html'">
+                <img src="/placeholder.svg?height=32&width=32" alt="User" class="user-avatar">
+                <div class="user-info">
+                    <h6 id="userName">John Doe</h6>
+                    <p>Patient</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+        <div class="doctors-container">
+            <!-- Filters Sidebar -->
+            <aside class="filters-sidebar">
+                <div class="dashboard-card filters-card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-sliders-h"></i> Filters
+                        </h5>
+                        <button class="btn btn-link btn-sm" onclick="clearAllFilters()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                    <div class="card-content filters-content">
+                        <!-- Specialty Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="fas fa-stethoscope"></i> Specialty
+                            </label>
+                            <div class="filter-options">
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="all" id="specialtyAll" checked onchange="filterDoctors()">
+                                    <label class="form-check-label" for="specialtyAll">
+                                        All Specialties
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="cardiology" id="cardiology" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="cardiology">
+                                        Cardiology
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="dermatology" id="dermatology" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="dermatology">
+                                        Dermatology
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="neurology" id="neurology" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="neurology">
+                                        Neurology
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="orthopedics" id="orthopedics" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="orthopedics">
+                                        Orthopedics
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="pediatrics" id="pediatrics" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="pediatrics">
+                                        Pediatrics
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="general" id="general" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="general">
+                                        General Medicine
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rating Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="fas fa-star"></i> Rating
+                            </label>
+                            <div class="filter-options">
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="all-rating" id="allRating" checked onchange="filterDoctors()">
+                                    <label class="form-check-label" for="allRating">
+                                        All Ratings
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="5-star" id="5star" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="5star">
+                                        <i class="fas fa-star"></i> 5.0 Stars
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="4-star" id="4star" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="4star">
+                                        <i class="fas fa-star"></i> 4.0+ Stars
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="3-star" id="3star" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="3star">
+                                        <i class="fas fa-star"></i> 3.0+ Stars
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Availability Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="fas fa-clock"></i> Availability
+                            </label>
+                            <div class="filter-options">
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="all-availability" id="allAvailability" checked onchange="filterDoctors()">
+                                    <label class="form-check-label" for="allAvailability">
+                                        Any Time
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="today" id="today" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="today">
+                                        <i class="fas fa-circle" style="font-size: 0.5rem; color: #10b981;"></i> Available Today
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="week" id="week" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="week">
+                                        <i class="fas fa-circle" style="font-size: 0.5rem; color: #f59e0b;"></i> This Week
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input filter-checkbox" type="checkbox" value="month" id="month" onchange="filterDoctors()">
+                                    <label class="form-check-label" for="month">
+                                        <i class="fas fa-circle" style="font-size: 0.5rem; color: #3b82f6;"></i> This Month
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Experience Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="fas fa-briefcase"></i> Experience
+                            </label>
+                            <input type="range" class="form-range" id="experienceRange" min="0" max="50" value="0" onchange="filterDoctors()">
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                <span id="experienceValue">0</span>+ years
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Doctors Grid -->
+            <main class="doctors-main">
+                <!-- Sort Options -->
+                <div class="sort-bar">
+                    <div class="results-info">
+                        <span id="resultsCount">Showing all doctors</span>
+                    </div>
+                    <div class="sort-options">
+                        <label for="sortSelect" style="margin-bottom: 0; margin-right: 0.75rem;">Sort by:</label>
+                        <select class="form-select form-select-sm" id="sortSelect" onchange="sortDoctors()">
+                            <option value="recommended">Recommended</option>
+                            <option value="rating-high">Rating (High to Low)</option>
+                            <option value="rating-low">Rating (Low to High)</option>
+                            <option value="experience">Most Experienced</option>
+                            <option value="newest">Newest</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Doctors Grid -->
+                <div class="doctors-grid" id="doctorsGrid">
+                    <!-- Populated by JavaScript -->
+                    <div class="doctor-card">
+                        <div class="doctor-card-header">
+                            <div class="doctor-image-wrapper">
+                                <img src="/placeholder.svg?height=200&width=200" alt="Dr. Sarah Johnson" class="doctor-image">
+                                <div class="availability-badge" style="background-color: green">
+                                    <i class="fas fa-circle-check"></i>
+                                    Available
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="doctor-card-body">
+                            <h5 class="doctor-name">Dr. Sarah Johnson</h5>
+                            <p class="doctor-specialty">
+                                <i class="fas fa-stethoscope"></i> Cardiology
+                            </p>
+
+                            <div class="doctor-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Downtown Medical Center
+                            </div>
+
+                            <div class="doctor-rating">
+                                <div class="stars-container">
+                                    <i class="far fa-star"></i>
+                                </div>
+                                <span class="rating-text">4.9</span>
+                                <span class="reviews-count">(234)</span>
+                            </div>
+
+                            <div class="doctor-info-row">
+                                <div class="info-item">
+                                    <i class="fas fa-briefcase"></i>
+                                    <span>15y exp</span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-globe"></i>
+                                    <span>2 langs</span>
+                                </div>
+                            </div>
+
+                            <div class="doctor-price">
+                                <span class="price-label">From</span>
+                                <span class="price-value">$150 - $300</span>
+                            </div>
+                        </div>
+
+                        <div class="doctor-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="doctorModal">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); bookDoctorQuick(1)">
+                                <i class="fas fa-calendar-plus"></i> Book
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<!-- Doctor Details Modal -->
+<div class="modal fade" id="doctorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-modern">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title">Doctor Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="doctorModalBody">
+                <!-- Populated by JavaScript -->
+                <div class="doctor-details-modal">
+                    <!-- Header -->
+                    <div class="doctor-details-header">
+                        <img src="${selectedDoctor.image}" alt="${selectedDoctor.name}" class="doctor-details-image">
+                        <div class="doctor-details-info">
+                            <h4>${selectedDoctor.name}</h4>
+                            <p class="specialty-badge">
+                                <i class="fas fa-stethoscope"></i> ${selectedDoctor.specialty}
+                            </p>
+                            <div class="rating-large">
+                                <div class="stars-large">
+                                    ${starsHTML}
+                                </div>
+                                <span>${selectedDoctor.rating} (${selectedDoctor.reviews} reviews)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Info Grid -->
+                    <div class="quick-info-grid">
+                        <div class="info-card">
+                            <i class="fas fa-briefcase"></i>
+                            <div>
+                                <span class="info-label">Experience</span>
+                                <span class="info-value">${selectedDoctor.experience} Years</span>
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-graduation-cap"></i>
+                            <div>
+                                <span class="info-label">Education</span>
+                                <span class="info-value">${selectedDoctor.education}</span>
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <span class="info-label">Location</span>
+                                <span class="info-value">${selectedDoctor.location}</span>
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-dollar-sign"></i>
+                            <div>
+                                <span class="info-label">Price Range</span>
+                                <span class="info-value">${selectedDoctor.priceRange}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- About Section -->
+                    <div class="about-section">
+                        <h6>About</h6>
+                        <p>${selectedDoctor.about}</p>
+                    </div>
+
+                    <!-- Specializations -->
+                    <div class="specializations-section">
+                        <h6>Specializations</h6>
+                        <div class="specialization-tags">
+                            ${selectedDoctor.specializations.map((spec) => `<span class="spec-tag">${spec}</span>`).join("")}
+                        </div>
+                    </div>
+
+                    <!-- Languages -->
+                    <div class="languages-section">
+                        <h6>Languages</h6>
+                        <div class="languages-list">
+                            ${selectedDoctor.languages.map((lang) => `<span class="lang-badge">${lang}</span>`).join("")}
+                        </div>
+                    </div>
+
+                    <!-- Consultation Types -->
+                    <div class="consultation-section">
+                        <h6>Consultation Types</h6>
+                        <div class="consultation-types">
+                            ${selectedDoctor.consultationType.map((type) => `<span class="consultation-badge">${type}</span>`).join("")}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="bookAppointmentWithDoctor()">
+                    <i class="fas fa-calendar-check"></i> Book Appointment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

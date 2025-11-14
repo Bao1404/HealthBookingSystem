@@ -1,0 +1,609 @@
+﻿@model HealthBookingSystem.Models.PatientDetailsViewModel
+@{
+    Layout = "_LayoutDoctor";
+    ViewData["Title"] = "Patient Details";
+}
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <header class="header">
+        <h1 class="header-title">Patient Details</h1>
+        <div class="header-actions">
+            <a href="@Url.Action("Patients")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back to Patients
+            </a>
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">5</span>
+            </button>
+            <a class="user-profile" asp-controller="Doctor" asp-action="Profile" style="text-decoration: none;">
+                <img src="@(ViewBag.Doctor?.User?.AvatarUrl ?? "/placeholder.svg?height=32&width=32")" alt="Doctor" class="user-avatar">
+                <div class="user-info">
+                    <h6 id="doctorName">@ViewBag.Doctor?.User?.FullName</h6>
+                    <p>@ViewBag.Doctor?.Specialty?.Name</p>
+                </div>
+            </a>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content patient-details-content">
+        <!-- Patient Info Card -->
+        <div class="patient-info-card">
+            <div class="patient-header-details">
+                <div class="patient-avatar-large">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="patient-main-info">
+                    <h2 class="patient-name">@Model.Patient.FullName</h2>
+                    <p class="patient-email">@Model.Patient.Email</p>
+                    <div class="patient-badges">
+                        <span class="badge badge-@Model.Patient.StatusColor">@Model.Patient.PatientStatus</span>
+                        @if (!string.IsNullOrEmpty(Model.Patient.BloodType))
+                        {
+                            <span class="badge badge-info">@Model.Patient.BloodType</span>
+                        }
+                    </div>
+                </div>
+                <div class="patient-quick-stats">
+                    <div class="quick-stat">
+                        <div class="stat-number">@Model.Statistics.TotalAppointments</div>
+                        <div class="stat-label">Total Visits</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="stat-number">@Model.Statistics.CompletedAppointments</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="stat-number">@Model.Statistics.PatientSince</div>
+                        <div class="stat-label">Patient Since</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="patient-details-grid">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Personal Information -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-user-circle"></i>
+                            Personal Information
+                        </h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Age</span>
+                                <span class="info-value">@(Model.Patient.Age?.ToString() ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Gender</span>
+                                <span class="info-value">@(Model.Patient.Gender ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Date of Birth</span>
+                                <span class="info-value">@(Model.Patient.DateOfBirth?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phone</span>
+                                <span class="info-value">@(Model.Patient.Phone ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Emergency Contact</span>
+                                <span class="info-value">@(Model.Patient.EmergencyPhoneNumber ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Address</span>
+                                <span class="info-value">@(Model.Patient.Address ?? "N/A")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical Information -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-heartbeat"></i>
+                            Medical Information
+                        </h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Blood Type</span>
+                                <span class="info-value">@(Model.Patient.BloodType ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Weight</span>
+                                <span class="info-value">@(Model.Patient.Weight?.ToString() ?? "N/A") kg</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Height</span>
+                                <span class="info-value">@(Model.Patient.Height?.ToString() ?? "N/A") cm</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">BMI</span>
+                                <span class="info-value">@(Model.Patient.Bmi?.ToString("F1") ?? "N/A")</span>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Patient.Allergies))
+                        {
+                            <div class="allergies-section">
+                                <h6 class="section-title">Allergies</h6>
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    @Model.Patient.Allergies
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- Appointment History -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            Appointment History
+                        </h5>
+                    </div>
+                    <div class="card-content">
+                        @if (Model.AppointmentHistory.Any())
+                        {
+                            <div class="appointment-timeline">
+                                @foreach (var appointment in Model.AppointmentHistory.Take(10))
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker timeline-@appointment.Status.ToLower()">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-header">
+                                                <span class="timeline-date">@appointment.AppointmentDateTime.ToString("MMM dd, yyyy")</span>
+                                                <span class="timeline-time">@appointment.AppointmentDateTime.ToString("HH:mm")</span>
+                                                <span class="badge badge-@GetStatusColor(appointment.Status)">@appointment.Status</span>
+                                            </div>
+                                            <div class="timeline-details">
+                                                <p class="appointment-type">@appointment.AppointmentType</p>
+                                                @if (!string.IsNullOrEmpty(appointment.Notes))
+                                                {
+                                                    <p class="appointment-notes">@appointment.Notes</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            @if (Model.AppointmentHistory.Count > 10)
+                            {
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-outline-primary" onclick="loadMoreAppointments()">
+                                        Load More (@(Model.AppointmentHistory.Count - 10) more)
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="no-appointments">
+                                <p class="text-muted">No appointment history available.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Upcoming Appointments -->
+                @if (Model.Patient.NextAppointment.HasValue)
+                {
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="fas fa-clock"></i>
+                                Next Appointment
+                            </h5>
+                        </div>
+                        <div class="card-content">
+                            <div class="next-appointment">
+                                <div class="appointment-date">
+                                    <span class="day">@Model.Patient.NextAppointment.Value.Day</span>
+                                    <span class="month">@Model.Patient.NextAppointment.Value.ToString("MMM")</span>
+                                </div>
+                                <div class="appointment-info">
+                                    <p class="appointment-time">@Model.Patient.NextAppointment.Value.ToString("HH:mm")</p>
+                                    <p class="appointment-status">Scheduled</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<style>
+    .patient-details-content {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .patient-info-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 30px;
+        color: white;
+    }
+
+    .patient-header-details {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .patient-avatar-large {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        color: white;
+    }
+
+    .patient-main-info {
+        flex: 1;
+    }
+
+        .patient-main-info h2 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .patient-main-info p {
+            margin: 0 0 12px 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+    .patient-badges {
+        display: flex;
+        gap: 8px;
+    }
+
+    .patient-quick-stats {
+        display: flex;
+        gap: 30px;
+    }
+
+    .quick-stat {
+        text-align: center;
+    }
+
+        .quick-stat .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .quick-stat .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+    .patient-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .info-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 14px;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .allergies-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .section-title {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .appointment-timeline {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 40px;
+            bottom: -20px;
+            width: 2px;
+            background: #e9ecef;
+        }
+
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .timeline-completed {
+        background: #28a745;
+    }
+
+    .timeline-confirmed {
+        background: #007bff;
+    }
+
+    .timeline-pending {
+        background: #ffc107;
+    }
+
+    .timeline-cancelled {
+        background: #dc3545;
+    }
+
+    .timeline-content {
+        flex: 1;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .timeline-date {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .timeline-time {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .timeline-details {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .appointment-type {
+        font-weight: 500;
+        color: #333;
+        margin: 0 0 4px 0;
+    }
+
+    .appointment-notes {
+        margin: 0;
+        font-style: italic;
+    }
+
+    .next-appointment {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        color: white;
+    }
+
+    .appointment-date {
+        text-align: center;
+        background: rgba(255,255,255,0.2);
+        padding: 15px;
+        border-radius: 8px;
+        min-width: 80px;
+    }
+
+        .appointment-date .day {
+            display: block;
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .appointment-date .month {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+    .appointment-info {
+        flex: 1;
+    }
+
+    .appointment-time {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+    }
+
+    .appointment-status {
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    .no-appointments {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+
+    /* Badge styles */
+    .badge {
+        font-size: 11px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .badge-secondary {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .badge-primary {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    /* Responsive */
+    @@media (max-width: 1024px) {
+        .patient-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .patient-header-details {
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .patient-quick-stats {
+            justify-content: center;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .timeline-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+    }
+</style>
+
+<script>
+    function scheduleAppointmentForPatient(patientId) {
+        alert('Schedule appointment feature for patient ID: ' + patientId + ' - Feature coming soon!');
+    }
+
+    function loadMoreAppointments() {
+        alert('Load more appointments feature - Feature coming soon!');
+    }
+</script>
+
+@functions {
+    string GetStatusColor(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "pending" => "warning",
+            "confirmed" => "primary",
+            "completed" => "success",
+            "cancelled" => "danger",
+            _ => "secondary"
+        };
+    }
+}

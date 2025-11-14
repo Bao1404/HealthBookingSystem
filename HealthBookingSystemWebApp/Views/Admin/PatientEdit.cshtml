@@ -1,0 +1,231 @@
+﻿@model BusinessObject.Models.User
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Edit User";
+}
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <header class="header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="header-title">Edit Patient</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="ManagePatients">Patient Management</a></li>
+                        <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="PatientDetail" asp-route-id="@Model.UserId">@Model.FullName</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <a asp-controller="Admin" asp-action="PatientDetail" asp-route-id="@Model.UserId" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Details
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title">Edit Patient Information</h5>
+            </div>
+            <div class="card-content">
+                <form asp-controller="Admin" asp-action="PatientEdit" asp-route-id="@Model.UserId" method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="FullName" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input asp-for="FullName" class="form-control @(ViewData.ModelState["FullName"]?.Errors.Count > 0 ? "is-invalid" : "")" required>
+                                <span asp-validation-for="FullName" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input asp-for="Email" type="email" class="form-control @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "is-invalid" : "")" required>
+                                <span asp-validation-for="Email" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PhoneNumber" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                <input asp-for="PhoneNumber" class="form-control @(ViewData.ModelState["PhoneNumber"]?.Errors.Count > 0 ? "is-invalid" : "")" required>
+                                <span asp-validation-for="PhoneNumber" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Role" class="form-label">Role <span class="text-danger">*</span></label>
+                                <select asp-for="Role" class="form-select @(ViewData.ModelState["Role"]?.Errors.Count > 0 ? "is-invalid" : "")" required>
+                                    <option value="">Select Role</option>
+                                    <option value="patient" selected="@(Model.Role == "patient")">Patient</option>
+                                </select>
+                                <span asp-validation-for="Role" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="IsActive" class="form-label">Status <span class="text-danger">*</span></label>
+                                <select asp-for="IsActive" class="form-select @(ViewData.ModelState["IsActive"]?.Errors.Count > 0 ? "is-invalid" : "")" required>
+                                    <option value="true" selected="@(Model.IsActive == true)">Active</option>
+                                    <option value="false" selected="@(Model.IsActive == false)">Inactive</option>
+                                </select>
+                                <span asp-validation-for="IsActive" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="AvatarUrl" class="form-label">Avatar URL</label>
+                                <input asp-for="AvatarUrl" class="form-control @(ViewData.ModelState["AvatarUrl"]?.Errors.Count > 0 ? "is-invalid" : "")" placeholder="https://example.com/avatar.jpg">
+                                <span asp-validation-for="AvatarUrl" class="invalid-feedback"></span>
+                                <div class="form-text">Leave empty to use default avatar</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read-only Information -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">User ID</label>
+                                <input type="text" class="form-control" value="@Model.UserId" readonly>
+                                <div class="form-text">User ID cannot be changed</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Account Created</label>
+                                <input type="text" class="form-control" value="@(Model.CreatedAt?.ToString("MMMM dd, yyyy 'at' HH:mm") ?? "Not available")" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Section -->
+                    <div class="dashboard-card mt-4">
+                        <div class="card-header">
+                            <h6 class="card-title">Password Management</h6>
+                        </div>
+                        <div class="card-content">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Note:</strong> Password changes should be handled through a separate password reset process for security reasons.
+                            </div>
+                            <button type="button" class="btn btn-warning" onclick="resetPassword(@Model.UserId)">
+                                <i class="fas fa-key"></i>
+                                Reset Password
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <div>
+                            <a asp-controller="Admin" asp-action="UserDetail" asp-route-id="@Model.UserId" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                                Cancel
+                            </a>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Validation Summary -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="dashboard-card mt-3">
+                <div class="card-header">
+                    <h6 class="card-title text-danger">Please correct the following errors:</h6>
+                </div>
+                <div class="card-content">
+                    <div asp-validation-summary="All" class="alert alert-danger"></div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function resetPassword(userId) {
+        if (!confirm('Are you sure you want to reset this user\'s password? This will send a password reset email to the user.')) {
+            return;
+        }
+
+        // This would typically make an API call to trigger password reset
+        alert('Password reset functionality would be implemented here. This would typically:\n\n1. Generate a secure reset token\n2. Send an email to the user\n3. Allow the user to set a new password');
+    }
+
+    // Client-side validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const emailInput = document.getElementById('Email');
+        const phoneInput = document.getElementById('PhoneNumber');
+
+
+        // Phone validation
+        phoneInput.addEventListener('blur', function() {
+            const phone = this.value;
+            const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+
+            if (phone && !phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
+                this.classList.add('is-invalid');
+                if (!this.nextElementSibling || !this.nextElementSibling.classList.contains('invalid-feedback')) {
+                    const feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    feedback.textContent = 'Please enter a valid phone number';
+                    this.parentNode.appendChild(feedback);
+                }
+            } else {
+                this.classList.remove('is-invalid');
+                const feedback = this.nextElementSibling;
+                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                    feedback.remove();
+                }
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+
+            // Check required fields
+            const requiredFields = form.querySelectorAll('[required]');
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please fill in all required fields.');
+            }
+        });
+    });
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

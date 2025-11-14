@@ -1,0 +1,1026 @@
+﻿@model HealthBookingSystem.Models.DoctorDashboardViewModel
+@{
+    Layout = "_LayoutDoctor";
+    ViewData["Title"] = "Dashboard";
+}
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 0;
+        background-color: #f8f9fa;
+    }
+
+
+
+    /* Content Styles */
+    .content {
+        padding: 30px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .stat-icon.blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .stat-icon.green { background: linear-gradient(135deg, #56ab2f, #a8e6cf); }
+    .stat-icon.cyan { background: linear-gradient(135deg, #00d2ff, #3a7bd5); }
+    .stat-icon.yellow { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+    .stat-content h3 {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+        color: #2c3e50;
+    }
+
+    .stat-content p {
+        margin: 0;
+        color: #7f8c8d;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Dashboard Layout */
+    .dashboard-with-sidebar {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+
+    .dashboard-main {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+        padding: 20px 25px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .view-all-link {
+        color: #667eea;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .view-all-link:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+
+    .card-content {
+        padding: 25px;
+    }
+
+    /* Appointments List */
+    .appointment-item {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        border-radius: 10px;
+        background: #f8f9fa;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .appointment-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+
+    .appointment-time {
+        text-align: center;
+        min-width: 80px;
+    }
+
+    .appointment-time .time {
+        display: block;
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .appointment-time .date {
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+
+    .appointment-info {
+        flex: 1;
+    }
+
+    .appointment-info h6 {
+        margin: 0 0 5px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .appointment-info p {
+        margin: 0 0 8px 0;
+        color: #7f8c8d;
+        font-size: 14px;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+
+    .status-confirmed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .appointment-actions button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #218838;
+        transform: scale(1.05);
+    }
+
+    /* Patients List */
+    .patient-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        border-radius: 10px;
+        background: #f8f9fa;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .patient-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+
+    .patient-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid #dee2e6;
+        flex-shrink: 0;
+    }
+
+    .patient-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+    .patient-avatar img:hover {
+        transform: scale(1.05);
+    }
+
+    /* Fallback for broken images */
+    .patient-avatar img[src=""],
+    .patient-avatar img:not([src]) {
+        background: #f8f9fa url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23adb5bd"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>') center/60% no-repeat;
+    }
+
+    .patient-info {
+        flex: 1;
+    }
+
+    .patient-info h6 {
+        margin: 0 0 5px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .patient-info p {
+        margin: 0 0 5px 0;
+        color: #7f8c8d;
+        font-size: 14px;
+    }
+
+    .patient-info small {
+        color: #adb5bd;
+        font-size: 12px;
+    }
+
+    .patient-actions .btn {
+        padding: 6px 12px;
+        border: 1px solid #dee2e6;
+        background: white;
+        color: #667eea;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .patient-actions .btn:hover {
+        background: #667eea;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    /* Patient Statistics Grid */
+    .full-width-card {
+        grid-column: 1 / -1;
+    }
+
+    .patient-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .patient-stat-item {
+        padding: 20px;
+        border-radius: 10px;
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+    }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .stat-icon-small {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+    }
+
+    .bg-primary { background: #667eea; }
+    .bg-success { background: #28a745; }
+    .bg-warning { background: #ffc107; }
+    .bg-info { background: #17a2b8; }
+
+    .stat-info h6 {
+        margin: 0 0 5px 0;
+        font-size: 14px;
+        color: #7f8c8d;
+        font-weight: 500;
+    }
+
+    .stat-number {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 2px;
+    }
+
+    .stat-period {
+        font-size: 12px;
+        color: #adb5bd;
+    }
+
+    /* Sidebar Styles */
+    .calendar-sidebar-widget {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .action-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        border: none;
+        background: cornflowerblue;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: left;
+        width: 100%;
+    }
+
+    .action-item:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+    }
+
+    .action-content h6 {
+        margin: 0 0 5px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .action-content p {
+        margin: 0;
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+
+    /* Notifications */
+    .notification-item {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        border-radius: 10px;
+        background: #f8f9fa;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .notification-item.unread {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+    }
+
+    .notification-item:hover {
+        background: #e9ecef;
+    }
+
+    .notification-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+    }
+
+    .notification-content h6 {
+        margin: 0 0 5px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .notification-content p {
+        margin: 0 0 5px 0;
+        font-size: 12px;
+        color: #7f8c8d;
+    }
+
+    .notification-content small {
+        font-size: 11px;
+        color: #adb5bd;
+    }
+
+    .notification-actions .btn {
+        padding: 4px 10px;
+        font-size: 11px;
+        border-radius: 4px;
+    }
+
+    /* Week Stats */
+    .week-stats {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .week-stat-item {
+        text-align: center;
+        flex: 1;
+    }
+
+    .week-stat-number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 5px;
+    }
+
+    .week-stat-label {
+        font-size: 12px;
+        color: #7f8c8d;
+        font-weight: 500;
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #adb5bd;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 16px;
+    }
+
+    /* Modal Styles */
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        border-radius: 15px 15px 0 0;
+    }
+
+    .modal-title {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        border-color: #667eea;
+    }
+
+    .btn-primary:hover {
+        background: #764ba2;
+        border-color: #764ba2;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        border-color: #5a6268;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .search-container {
+            margin: 0;
+            max-width: 100%;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-with-sidebar {
+            grid-template-columns: 1fr;
+        }
+
+        .patient-stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .week-stats {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .appointment-item, .patient-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
+        }
+    }
+</style>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <header class="header">
+        <h1 class="header-title">Doctor Dashboard</h1>
+        @* <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search patients, appointments..." id="searchInput">
+        </div> *@
+        <div class="header-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">@(Model.UrgentNotifications.Count(n => !n.IsRead))</span>
+            </button>
+            <div class="user-profile" onclick="window.location.href='@Url.Action("Profile", "Doctor", new { id = Model.CurrentDoctor.UserId })'">
+                <img src="@(Model.CurrentDoctor.User?.AvatarUrl ?? "/placeholder.svg?height=32&width=32")" alt="Doctor" class="user-avatar">
+                <div class="user-info">
+                    <h6 id="doctorName">@(Model.CurrentDoctor.User?.FullName ?? "Dr. Unknown")</h6>
+                    <p>@(Model.CurrentDoctor.Specialty?.Name ?? "General")</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.Stats.TodayAppointmentCount</h3>
+                    <p>Today's Appointments</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.Stats.TotalPatientCount</h3>
+                    <p>Total Patients</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon cyan">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.Stats.UnreadMessageCount</h3>
+                    <p>Unread Messages</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon yellow">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.Stats.AverageRating.ToString("F1")</h3>
+                    <p>Average Rating</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Layout with Sidebar -->
+        <div class="dashboard-with-sidebar">
+            <!-- Main Dashboard Content -->
+            <div class="dashboard-main">
+                <!-- Today's Schedule -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Today's Schedule</h5>
+                        <a asp-action="Appointments" class="view-all-link">View All</a>
+                    </div>
+                    <div class="card-content">
+                        <div class="appointments-list" id="todaySchedule">
+                            @if (Model.TodaySchedule.Any())
+                            {
+                                @foreach (var appointment in Model.TodaySchedule)
+                                {
+                                    <div class="appointment-item">
+                                        <div class="appointment-time">
+                                            <span class="time">@appointment.AppointmentDateTime.ToString("HH:mm")</span>
+                                            <span class="date">@appointment.AppointmentDateTime.ToString("MMM dd")</span>
+                                        </div>
+                                        <div class="appointment-info">
+                                            <h6>@appointment.PatientName</h6>
+                                            <p>@(string.IsNullOrEmpty(appointment.Notes) ? "General Consultation" : appointment.Notes)</p>
+                                            <span class="status-badge status-@appointment.Status.ToLower()">@appointment.Status</span>
+                                        </div>
+                                        <div class="appointment-actions">
+                                            @if (appointment.Status == "Confirmed")
+                                            {
+                                                <button class="btn btn-sm btn-success" onclick="completeAppointment(@appointment.AppointmentId)">
+                                                    <i class="fas fa-check"></i> Complete
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-calendar-day"></i>
+                                    <p>No appointments scheduled for today</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Patients -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Recent Patients</h5>
+                        <a asp-action="Patients" class="view-all-link">View All</a>
+                    </div>
+                    <div class="card-content">
+                        <div class="patients-list" id="recentPatients">
+                            @if (Model.RecentPatients.Any())
+                            {
+                                @foreach (var patient in Model.RecentPatients)
+                                {
+                                    <div class="patient-item">
+                                        <div class="patient-avatar">
+                                            <img src="@(patient.AvatarUrl ?? "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg")"
+                                                 alt="@patient.FullName"
+                                                 onerror="this.src='https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'">
+                                        </div>
+                                        <div class="patient-info">
+                                            <h6>@patient.FullName</h6>
+                                            <p>@(patient.Age != null ? $"{patient.Age} years old" : "Age unknown") • @(patient.Gender ?? "Unknown")</p>
+                                            <small class="text-muted">Last visit: @(patient.LastAppointment?.ToString("MMM dd, yyyy") ?? "No visits")</small>
+                                        </div>
+                                        <div class="patient-actions">
+                                            <a asp-action="PatientDetails" asp-route-id="@patient.UserId" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-user-friends"></i>
+                                    <p>No recent patients</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Statistics -->
+                <div class="dashboard-card full-width-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Patient Statistics</h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="patient-stats-grid">
+                            <div class="patient-stat-item">
+                                <div class="stat-header">
+                                    <div class="stat-icon-small bg-primary">
+                                        <i class="fas fa-user-plus"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h6>New Patients</h6>
+                                        <span class="stat-number">@Model.Stats.NewPatientCount</span>
+                                        <span class="stat-period">This Month</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="patient-stat-item">
+                                <div class="stat-header">
+                                    <div class="stat-icon-small bg-success">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h6>Completed Visits</h6>
+                                        <span class="stat-number">@Model.Stats.CompletedVisitCount</span>
+                                        <span class="stat-period">Total</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="patient-stat-item">
+                                <div class="stat-header">
+                                    <div class="stat-icon-small bg-warning">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h6>Pending Reviews</h6>
+                                        <span class="stat-number">@Model.Stats.PendingReviewCount</span>
+                                        <span class="stat-period">Awaiting</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="patient-stat-item">
+                                <div class="stat-header">
+                                    <div class="stat-icon-small bg-info">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h6>Follow-ups</h6>
+                                        <span class="stat-number">@Model.Stats.FollowUpCount</span>
+                                        <span class="stat-period">Required</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="calendar-sidebar-widget">
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Quick Actions</h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="quick-actions">
+                            <a asp-action="Appointments" asp-controller="Doctor" class="action-item" style="border: 1px solid var(--border-color); background-color:#FAF8FC" onclick="openNewAppointmentModal()">
+                                <div class="action-icon">
+                                    <i class="fas fa-calendar-plus" style="color: blue;"></i>
+                                </div>
+                                <div class="action-content">
+                                    <h6>New Appointment</h6>
+                                    <p>Schedule patient visit</p>
+                                </div>
+                            </a>
+                            <a asp-action="Patients" asp-controller="Doctor" class="action-item" style="border: 1px solid var(--border-color); background-color:#FAF8FC" onclick="window.location.href='doctor-patients.html'">
+                                <div class="action-icon green">
+                                    <i class="fas fa-user-plus" style="color: green;"></i>
+                                </div>
+                                <div class="action-content">
+                                    <h6>View Patients</h6>
+                                    <p>Manage patient records</p>
+                                </div>
+                            </a>
+                            <a asp-action="Messages" asp-controller="Doctor" class="action-item" style="border: 1px solid var(--border-color); background-color:#FAF8FC" onclick="window.location.href='doctor-messages.html'">
+                                <div class="action-icon cyan">
+                                    <i class="fas fa-comments" style="color: cyan;"></i>
+                                </div>
+                                <div class="action-content">
+                                    <h6>Messages</h6>
+                                    <p>Check patient messages</p>
+                                </div>
+                            </a>
+                            <a asp-action="Schedule" asp-controller="Doctor" class="action-item" style="border: 1px solid var(--border-color); background-color:#FAF8FC" onclick="window.location.href='doctor-schedule.html'">
+                                <div class="action-icon yellow">
+                                    <i class="fas fa-clock" style="color: yellow;"></i>
+                                </div>
+                                <div class="action-content">
+                                    <h6>Set Schedule</h6>
+                                    <p>Manage availability</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Urgent Notifications -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Urgent Notifications</h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="notifications-list" id="urgentNotifications">
+                            @if (Model.UrgentNotifications.Any())
+                            {
+                                @foreach (var notification in Model.UrgentNotifications.Take(5))
+                                {
+                                    <div class="notification-item @(!notification.IsRead ? "unread" : "")">
+                                        <div class="notification-icon @notification.Color">
+                                            <i class="@notification.Icon"></i>
+                                        </div>
+                                        <div class="notification-content">
+                                            <h6>@notification.Title</h6>
+                                            <p>@notification.Message</p>
+                                            <small class="text-muted">@notification.TimeDisplay</small>
+                                        </div>
+                                        @if (notification.Type == "appointment")
+                                        {
+                                            <div class="notification-actions">
+                                                <a asp-action="Appointments" class="btn btn-sm btn-outline-primary">View</a>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>No urgent notifications</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- This Week Summary -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">This Week</h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="week-stats">
+                            <div class="week-stat-item">
+                                <div class="week-stat-number">@Model.WeeklyStats.WeeklyAppointmentCount</div>
+                                <div class="week-stat-label">Appointments</div>
+                            </div>
+                            <div class="week-stat-item">
+                                <div class="week-stat-number">@Model.WeeklyStats.WeeklyNewPatientCount</div>
+                                <div class="week-stat-label">New Patients</div>
+                            </div>
+                            <div class="week-stat-item">
+                                <div class="week-stat-number">@Model.WeeklyStats.WeeklyFollowUpCount</div>
+                                <div class="week-stat-label">Follow-ups</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function completeAppointment(appointmentId) {
+        if (confirm('Are you sure you want to mark this appointment as completed?')) {
+            fetch('@Url.Action("CompleteAppointment", "Doctor")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({ appointmentId: appointmentId })
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Error completing appointment');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error completing appointment');
+            });
+        }
+    }
+
+
+    function scheduleAppointment() {
+        // Implementation for scheduling new appointment
+        alert('Schedule appointment functionality to be implemented');
+    }
+
+    // Handle broken patient images
+    document.addEventListener('DOMContentLoaded', function() {
+        const patientImages = document.querySelectorAll('.patient-avatar img');
+        patientImages.forEach(img => {
+            img.addEventListener('error', function() {
+                this.src = 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg';
+            });
+        });
+    });
+</script>

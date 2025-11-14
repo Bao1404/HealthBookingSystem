@@ -1,0 +1,117 @@
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Doctor Management";
+}
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <header class="header">
+        <h1 class="header-title">Doctor Management</h1>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search doctors..." id="searchInput">
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                <i class="fas fa-plus"></i>
+                Add Doctor
+            </button>
+        </div>
+    </header>
+    <div class="content">
+        <!-- Filters -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title">Filters</h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+                    <i class="fas fa-times"></i>
+                    Clear All
+                </button>
+            </div>
+            <div class="card-content">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="statusFilter" onchange="applyFilters()">
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Doctors Table -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title">Doctor List</h5>
+            </div>
+            <div class="card-content">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div id="noDataMessage" style="display:none;text-align:center;padding:20px;color:#888;">No doctors found.</div>
+                </div>
+                <nav aria-label="Doctors pagination">
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+        </div>
+        <div class="dashboard-card" id="bulkActionsCard" style="display: none;">
+            <div class="card-content">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span id="selectedCount">0</span> doctors selected
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-success" onclick="bulkAction('activate')">
+                            <i class="fas fa-check"></i> Activate
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="bulkAction('deactivate')">
+                            <i class="fas fa-pause"></i> Deactivate
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="bulkAction('delete')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/js/admin/admin-doctors.js"></script>
+<script>
+    // Show message when no data
+    function updateNoDataMessage() {
+        var tbody = document.getElementById('usersTableBody');
+        var noData = document.getElementById('noDataMessage');
+        if (tbody && noData) {
+            if (tbody.children.length === 0) {
+                noData.style.display = 'block';
+            } else {
+                noData.style.display = 'none';
+            }
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNoDataMessage();
+        var observer = new MutationObserver(updateNoDataMessage);
+        observer.observe(document.getElementById('usersTableBody'), { childList: true });
+    });
+</script>

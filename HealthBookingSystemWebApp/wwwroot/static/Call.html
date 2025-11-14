@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        window.onload = function () {
+            // Lấy dữ liệu từ localStorage
+            const conversationId = localStorage.getItem("conversationId");
+            const doctorName = localStorage.getItem("doctorName") || "Unknown Doctor";
+            const doctorId = localStorage.getItem("doctorId");
+
+            if (!conversationId || !doctorId) {
+                console.error("Missing conversationId or doctorId in localStorage");
+                alert("Cannot start call: Missing required data");
+                return;
+            }
+
+            // Sử dụng conversationId làm roomID
+            const roomID = conversationId;
+            // Sử dụng doctorId làm userID
+            const userID = doctorId;
+            // Sử dụng doctorName làm userName
+            const userName = doctorName;
+
+            const appID = 2014403071;
+            const serverSecret = "43c18caae5ebb0f27ab9ab2a11f73535";
+            const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+
+            const zp = ZegoUIKitPrebuilt.create(kitToken);
+            zp.joinRoom({
+                container: document.querySelector("#root"),
+                sharedLinks: [{
+                    name: 'Personal link',
+                    url: window.location.protocol + '//' + window.location.host + window.location.pathname + '?roomID=' + roomID,
+                }],
+                scenario: {
+                    mode: ZegoUIKitPrebuilt.VideoConference,
+                },
+                showPreJoinView: false,
+                turnOnMicrophoneWhenJoining: false,
+                turnOnCameraWhenJoining: false,
+                showMyCameraToggleButton: true,
+                showMyMicrophoneToggleButton: true,
+                showAudioVideoSettingsButton: true,
+                showScreenSharingButton: true,
+                showTextChat: false,
+                showUserList: true,
+                maxUsers: 100,
+                layout: "Auto",
+                showLayoutButton: false,
+            });
+
+            console.log("Starting call with roomID:", roomID, "userName:", userName, "userID:", userID);
+        };
+    </script>
+</body>
+</html>

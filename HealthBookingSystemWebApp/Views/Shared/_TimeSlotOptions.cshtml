@@ -1,0 +1,14 @@
+﻿@model List<HealthBookingSystem.Models.TimeSlotViewModel>
+
+<option value="">Chọn giờ khám</option>
+@foreach (var timeSlot in Model)
+{
+    if (timeSlot.IsAvailable)
+    {
+        <option value="@timeSlot.Time.ToString(@"hh\:mm\:ss")">@timeSlot.DisplayTime</option>
+    }
+    else
+    {
+        <option value="@timeSlot.Time.ToString(@"hh\:mm\:ss")" disabled>@timeSlot.DisplayTime (Đã đặt)</option>
+    }
+}

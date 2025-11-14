@@ -1,0 +1,276 @@
+﻿@model BusinessObject.Models.User
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "User Details";
+}
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <header class="header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="header-title">Doctor Details</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="ManageDoctors">Doctor Management</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">@Model.FullName</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <a asp-controller="Admin" asp-action="DoctorEdit" asp-route-id="@Model.UserId" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Edit Doctor
+                </a>
+                <a asp-controller="Admin" asp-action="UserDelete" asp-route-id="@Model.UserId" class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Delete Doctor
+                </a>
+                <a asp-controller="Admin" asp-action="ManageDoctors" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to List
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- User Profile Card -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title">Doctor Profile</h5>
+            </div>
+            <div class="card-content">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="user-avatar-large mb-3">
+                            <img src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "/placeholder.svg?height=120&width=120" : Model.AvatarUrl)"
+                                 alt="@Model.FullName" class="rounded-circle" width="120" height="120">
+                        </div>
+                        <div class="user-status">
+                            <span class="badge bg-@(Model.IsActive == true ? "success" : "secondary") fs-6">
+                                @(Model.IsActive == true ? "Active" : "Inactive")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Full Name</label>
+                                    <p class="form-control-plaintext">@Model.FullName</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Email</label>
+                                    <p class="form-control-plaintext">@Model.Email</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Phone Number</label>
+                                    <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not provided" : Model.PhoneNumber)</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Role</label>
+                                    <p class="form-control-plaintext">
+                                        @{
+                                            var roleBadgeClass = Model.Role?.ToLower() switch
+                                            {
+                                                "admin" => "danger",
+                                                "doctor" => "primary",
+                                                "staff" => "warning",
+                                                "patient" => "success",
+                                                _ => "secondary"
+                                            };
+                                        }
+                                        <span class="badge bg-@roleBadgeClass">@Model.Role</span>
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">User ID</label>
+                                    <p class="form-control-plaintext">@Model.UserId</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Avatar URL</label>
+                                    <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.AvatarUrl) ? "Default avatar" : Model.AvatarUrl)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Activity & Timestamps -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Account Information</h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Account Created</label>
+                            <p class="form-control-plaintext">
+                                @(Model.CreatedAt?.ToString("MMMM dd, yyyy 'at' HH:mm") ?? "Not available")
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Last Updated</label>
+                            <p class="form-control-plaintext">
+                                @(Model.UpdatedAt?.ToString("MMMM dd, yyyy 'at' HH:mm") ?? "Not available")
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Last Login</label>
+                            <p class="form-control-plaintext">
+                                @(Model.UpdatedAt?.ToString("MMMM dd, yyyy 'at' HH:mm") ?? "Never")
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Quick Actions</h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="d-grid gap-2">
+                            @if (Model.IsActive == true)
+                            {
+                                <button class="btn btn-warning" onclick="updateUserStatus(@Model.UserId, false)">
+                                    <i class="fas fa-pause"></i>
+                                    Deactivate Doctor
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-success" onclick="updateUserStatus(@Model.UserId, true)">
+                                    <i class="fas fa-play"></i>
+                                    Activate Doctor
+                                </button>
+                            }
+                            <button class="btn btn-info" onclick="resetPassword(@Model.UserId)">
+                                <i class="fas fa-key"></i>
+                                Reset Password
+                            </button>
+                            <button class="btn btn-secondary" onclick="sendWelcomeEmail(@Model.UserId)">
+                                <i class="fas fa-envelope"></i>
+                                Send Welcome Email
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Data (if available) -->
+        @if (Model.Doctor != null || Model.Patient != null)
+        {
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title">Related Information</h5>
+                </div>
+                <div class="card-content">
+                    @if (Model.Doctor != null)
+                    {
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-user-md"></i> Doctor Information</h6>
+                            <p class="mb-0">This user is registered as a doctor. Additional doctor-specific information would be displayed here.</p>
+                        </div>
+                    }
+                    @if (Model.Patient != null)
+                    {
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-user-injured"></i> Patient Information</h6>
+                            <p class="mb-0">This user is registered as a patient. Additional patient-specific information would be displayed here.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function updateUserStatus(userId, isActive) {
+        if (!confirm(`Are you sure you want to ${isActive ? 'activate' : 'deactivate'} this user?`)) {
+            return;
+        }
+
+        fetch(`/Admin/UpdateUserStatus?userId=${userId}&isActive=${isActive}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                showAlert('success', data.message);
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showAlert('danger', data.error || 'Failed to update user status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('danger', 'An error occurred while updating user status');
+        });
+    }
+
+    function resetPassword(userId) {
+        if (!confirm('Are you sure you want to reset this user\'s password?')) {
+            return;
+        }
+
+        // This would typically open a modal or redirect to a password reset page
+        alert('Password reset functionality would be implemented here');
+    }
+
+    function sendWelcomeEmail(userId) {
+        if (!confirm('Send welcome email to this user?')) {
+            return;
+        }
+
+        // This would typically make an API call to send the email
+        alert('Welcome email functionality would be implemented here');
+    }
+
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        const container = document.querySelector('.content');
+        container.insertBefore(alertDiv, container.firstChild);
+
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+</script> 

@@ -1,0 +1,316 @@
+﻿@model HealthBookingSystem.Models.DashboardViewModel
+@{
+    Layout = "_LayoutUser";
+    ViewData["Title"] = "Health Dashboard";
+}
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <header class="header">
+        <h1 class="header-title">Health Dashboard</h1>
+        @* <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search appointments, doctors..." id="searchInput">
+        </div> *@
+        <div class="header-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            <a asp-action="Profile" asp-controller="User" style="text-decoration: none;">
+                <div class="user-profile">
+                    <img src="@Model.CurrentUser.AvatarUrl" alt="User" class="user-avatar">
+                    <div class="user-info">
+                        <h6>@Model.CurrentUser.FullName</h6>
+                        <p>Patient</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.Stats.UpcomingAppointmentCount</h3>
+                    <p>Upcoming Appointments</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.Stats.CompletedVisitCount</h3>
+                    <p>Completed Visits</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon cyan">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.Stats.UnreadMessageCount</h3>
+                    <p>Unread Messages</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon yellow">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.Stats.HealthScore%</h3>
+                    <p>Health Score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Layout with Sidebar -->
+        <div class="dashboard-with-sidebar">
+            <!-- Main Dashboard Content -->
+            <div class="dashboard-main">
+                <!-- Main Dashboard Grid -->
+                <div class="dashboard-main-grid">
+                    <!-- Quick Actions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5 class="card-title">Quick Actions</h5>
+                        </div>
+                        <div class="card-content">
+                            <div class="quick-actions">
+                                <a asp-controller="User" asp-action="Appointments" class="action-item">
+                                    <div class="action-icon blue" style="color: blue;">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </div>
+                                    <div class="action-content">
+                                        <h6>Book Appointment</h6>
+                                        <p>Schedule with a specialist</p>
+                                    </div>
+                                </a>
+                                <a asp-controller="User" asp-action="ChatBox" class="action-item">
+                                    <div class="action-icon green" style="color: green;">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    <div class="action-content">
+                                        <h6>AI Assistant</h6>
+                                        <p>Get health consultation</p>
+                                    </div>
+                                </a>
+                                <a asp-controller="User" asp-action="Doctors" class="action-item">
+                                    <div class="action-icon cyan" style="color: cyan;">
+                                        <i class="fas fa-user-md"></i>
+                                    </div>
+                                    <div class="action-content">
+                                        <h6>Find Doctors</h6>
+                                        <p>Browse specialist directory</p>
+                                    </div>
+                                </a>
+                                <a asp-controller="User" asp-action="Messages" class="action-item">
+                                    <div class="action-icon yellow" style="color: yellow;">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                    <div class="action-content">
+                                        <h6>Messages</h6>
+                                        <p>Chat with doctors</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Appointments -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h5 class="card-title">Upcoming Appointments</h5>
+                            <a asp-controller="User" asp-action="Appointments" class="view-all-link">View All</a>
+                        </div>
+                        <div class="card-content">
+                            <div class="appointments-list">
+                                @if (Model.UpcomingAppointments.Any())
+                                {
+                                    @foreach (var appointment in Model.UpcomingAppointments)
+                                    {
+                                        <div class="appointment-item">
+                                            <div class="appointment-time">
+                                                <div class="time">@appointment.AppointmentDateTime.ToString("HH:mm")</div>
+                                                <div class="date">@appointment.AppointmentDateTime.ToString("dd/MM")</div>
+                                            </div>
+                                            <div class="appointment-details">
+                                                <h6>@appointment.DoctorName</h6>
+                                                <p>@appointment.SpecialtyName</p>
+                                                @if (!string.IsNullOrEmpty(appointment.Notes))
+                                                {
+                                                    <small class="text-muted">@appointment.Notes</small>
+                                                }
+                                            </div>
+                                            <div class="appointment-status">
+                                                <span class="status-badge status-@appointment.Status.ToLower()">@appointment.Status</span>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="no-appointments">
+                                        <p>No upcoming appointments</p>
+                                        <a asp-controller="User" asp-action="Appointments" class="btn btn-sm btn-primary">Book Now</a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointment History -->
+                <div class="dashboard-card full-width-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Medical History</h5>
+                        <a asp-controller="User" asp-action="Appointments" class="view-all-link">View All</a>
+                    </div>
+                    <div class="card-content">
+                        <div class="appointment-history-table">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Doctor</th>
+                                        <th>Specialty</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.RecentAppointments.Any())
+                                    {
+                                        @foreach (var appointment in Model.RecentAppointments)
+                                        {
+                                            <tr>
+                                                <td>@appointment.AppointmentDateTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td>@appointment.DoctorName</td>
+                                                <td>@appointment.SpecialtyName</td>
+                                                <td>
+                                                    <span class="status-badge status-@appointment.Status.ToLower()">
+                                                        @(appointment.Status == "Completed" ? "Completed" :
+                                                                                                        appointment.Status == "Cancelled" ? "Cancelled" :
+                                                                                                        appointment.Status == "Pending" ? "Pending" :
+                                                                                                        appointment.Status == "Confirmed" ? "Confirmed" : appointment.Status)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (appointment.Status == "Completed")
+                                                    {
+                                                        <button class="btn btn-sm btn-outline-primary">Details</button>
+                                                    }
+                                                    else if (appointment.Status == "Pending" || appointment.Status == "Confirmed")
+                                                    {
+                                                        <button class="btn btn-sm btn-outline-warning">Reschedule</button>
+                                                        <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="5" class="text-center">No medical history yet</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Sidebar -->
+            <div class="calendar-sidebar-widget">
+                <!-- Mini Calendar -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Calendar</h5>
+                        <div class="calendar-nav-mini">
+                            <button class="calendar-nav-btn-mini" onclick="previousMonth()">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="calendar-nav-btn-mini" onclick="nextMonth()">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content calendar-mini-content">
+                        <div class="calendar-month-year" id="calendarMonthYear">January 2024</div>
+                        <div class="calendar-mini-grid" id="calendarMiniGrid">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Schedule -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">Today's Schedule</h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="today-schedule">
+                            @if (Model.TodayAppointments.Any())
+                            {
+                                @foreach (var appointment in Model.TodayAppointments)
+                                {
+                                    <div class="schedule-item">
+                                        <div class="schedule-time">@appointment.AppointmentDateTime.ToString("HH:mm")</div>
+                                        <div class="schedule-details">
+                                            <h6>@appointment.DoctorName</h6>
+                                            <p>@appointment.SpecialtyName</p>
+                                        </div>
+                                        <div class="schedule-status">
+                                            <span class="status-indicator status-@appointment.Status.ToLower()"></span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="no-schedule">
+                                    <p>No appointments today</p>
+                                    <small class="text-muted">Time to rest and relax!</small>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">This Week</h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="week-stats">
+                            <div class="week-stat-item">
+                                <div class="week-stat-number">@Model.Stats.ThisWeekAppointmentCount</div>
+                                <div class="week-stat-label">Appointments</div>
+                            </div>
+                            <div class="week-stat-item">
+                                <div class="week-stat-number">@Model.Stats.ThisWeekCheckupCount</div>
+                                <div class="week-stat-label">Checkups</div>
+                            </div>
+                            <div class="week-stat-item">
+                                <div class="week-stat-number">@Model.Stats.ThisWeekFollowupCount</div>
+                                <div class="week-stat-label">Follow-ups</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/user/dashboard.js"></script>

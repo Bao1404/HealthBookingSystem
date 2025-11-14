@@ -1,0 +1,17 @@
+﻿@model List<HealthBookingSystem.Models.DoctorViewModel>
+
+<option value="">Chọn bác sĩ</option>
+@foreach (var doctor in Model)
+{
+    <option value="@doctor.UserId" data-specialty="@doctor.SpecialtyId">
+        BS. @doctor.FullName
+        @if (!string.IsNullOrEmpty(doctor.SpecialtyName))
+        {
+            <text>- @doctor.SpecialtyName</text>
+        }
+        @if (doctor.Rating.HasValue)
+        {
+            <text>(⭐ @doctor.Rating.Value.ToString("F1"))</text>
+        }
+    </option>
+}

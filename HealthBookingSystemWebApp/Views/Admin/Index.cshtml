@@ -1,0 +1,178 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Admin Dashboard";
+}
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <header class="header">
+        <h1 class="header-title">Admin Dashboard</h1>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search..." id="searchInput">
+        </div>
+        <div class="header-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">5</span>
+            </button>
+            <div class="user-profile">
+                <img src="/placeholder.svg?height=32&width=32" alt="Admin" class="user-avatar">
+                <div class="user-info">
+                    <h6 id="adminName">Admin User</h6>
+                    <p>Administrator</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalAppointments">3,456</h3>
+                    <p>Total Appointments</p>
+                    <small class="text-success">+8% from last month</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fas fa-user-injured"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="totalPatients">0</h3>
+                    <p>Total Patients</p>
+                    <small class="text-success" id="patientGrowth">Loading...</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="activePatients">0</h3>
+                    <p>Active Patients</p>
+                    <small class="text-info" id="newPatients">Loading...</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="confirmedAppointments">0</h3>
+                    <p>Confirmed Appointments</p>
+                    <small class="text-success" id="confirmedGrowth">Loading...</small>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon yellow">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="pendingAppointments">0</h3>
+                    <p>Pending Appointments</p>
+                    <small class="text-warning" id="pendingGrowth">Loading...</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="dashboard-main-grid">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title">Appointment Trends</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Last 12 Months
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="updateAppointmentChart('daily')">Last 7 Days</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="updateAppointmentChart('weekly')">Last 12 Weeks</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="updateAppointmentChart('monthly')">Last 12 Months</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="chart-stats mb-3">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="stat-mini">
+                                    <h6 id="periodTotal">0</h6>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-mini">
+                                    <h6 id="periodAverage">0</h6>
+                                    <small class="text-muted">Average</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-mini">
+                                    <h6 id="periodPeak">0</h6>
+                                    <small class="text-muted">Peak</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 300px;">
+                        <canvas id="appointmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5 class="card-title">Patient Status Distribution</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Status
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="updatePatientStatusChart()">Status</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="updatePatientAgeChart()">Age Distribution</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container" style="position: relative; height: 300px;">
+                        <canvas id="patientStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment Overview Chart -->
+        <div class="dashboard-card full-width-card">
+            <div class="card-header">
+                <h5 class="card-title">Appointment Overview</h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="updateAppointmentOverviewChart('daily')">Daily</button>
+                    <button class="btn btn-sm btn-primary" onclick="updateAppointmentOverviewChart('weekly')">Weekly</button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="updateAppointmentOverviewChart('monthly')">Monthly</button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="chart-container" style="position: relative; height: 400px;">
+                    <canvas id="appointmentOverviewChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/admin/admin-dashboard.js"></script>

@@ -1,0 +1,6 @@
+@HealthBookingSystemAPI_HostAddress = http://localhost:5118
+
+GET {{HealthBookingSystemAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
