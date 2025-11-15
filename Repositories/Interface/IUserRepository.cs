@@ -9,7 +9,7 @@ namespace Repositories.Interface
         User GetById(int id);
         void Add(User user);
         void Delete(int id);
-        Task<User> GetUserByEmailAndPassword(string email, string password);
+        Task<User> Login(string email, string password);
         Task<User> GetUserById(int userId);
         Task<User> CheckUserExist(string email);
         Task CreateUser(User user);

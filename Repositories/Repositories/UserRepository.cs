@@ -14,7 +14,7 @@ namespace Repositories.Repositories
             _context = context;
         }
 
-        public async Task<User> GetUserByEmailAndPassword(string email, string password)
+        public async Task<User> Login(string email, string password)
         {
             try
             {
