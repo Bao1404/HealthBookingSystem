@@ -11,7 +11,7 @@ namespace Services.Service
         {
             _userRepository = userRepository;
         }
-        public Task<User> GetUserByEmailAndPassword(string email, string password) => _userRepository.GetUserByEmailAndPassword(email, password);
+        public Task<User> Login(string email, string password) => _userRepository.Login(email, password);
         public Task<User> GetUserById(int userId) => _userRepository.GetUserById(userId);
         public Task<User> CheckUserExist(string email) => _userRepository.CheckUserExist(email);
         public Task CreateUser(User user) => _userRepository.CreateUser(user);
