@@ -26,7 +26,7 @@ namespace HealthBookingSystem.Controllers
             string email = vm.Email;
             string password = vm.Password;
 
-            var account = await _userService.GetUserByEmailAndPassword(email, password);
+            var account = await _userService.Login(email, password);
             if (account != null)
             {
                 HttpContext.Session.SetInt32("UserId", account.UserId);
