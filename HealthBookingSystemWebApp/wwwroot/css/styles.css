@@ -551,6 +551,59 @@ body {
     padding: 1.5rem;
 }
 
+/* Appointment History Table */
+.appointment-history-table {
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+    .history-table th {
+        background-color: var(--background);
+        color: var(--text-secondary);
+        font-weight: 600;
+        padding: 1rem 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .history-table td {
+        padding: 1rem 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .history-table tr:hover {
+        background-color: var(--background);
+    }
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+    .status-badge.completed {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+
+    .status-badge.upcoming {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-badge.cancelled {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
 /* Quick Actions */
 .quick-actions {
     display: flex;
