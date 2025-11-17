@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Services.Interface;
 
 namespace HealthBookingSystemAPI.Controllers
@@ -14,15 +15,17 @@ namespace HealthBookingSystemAPI.Controllers
             _patientService = patientService;
         }
         [HttpGet("doctor/{id}")]
+        [EnableQuery]
         public async Task<IActionResult> GetPatientsByDoctorId(int id)
         {
-            var patients = await _patientService.GetPatientsByDoctorAsync(id);
+            var patients = _patientService.GetPatientsByDoctorAsync(id);
             return Ok(patients);
         }
         [HttpGet("doctor/new/{id}")]
-        public async Task<IActionResult> GetNewPatientsByDoctorId(int id)
+        [EnableQuery]
+        public IActionResult GetNewPatientsByDoctorId(int id)
         {
-            var patients = await _patientService.GetNewPatientsAsync(id);
+            var patients = _patientService.GetNewPatientsAsync(id);
             return Ok(patients);
         }
     }

@@ -658,10 +658,10 @@
             <input type="text" class="search-input" placeholder="Search patients, appointments..." id="searchInput">
         </div> *@
         <div class="header-actions">
-            <button class="notification-btn">
+            @* <button class="notification-btn">
                 <i class="fas fa-bell"></i>
                 <span class="notification-badge">@(Model.UrgentNotifications.Count(n => !n.IsRead))</span>
-            </button>
+            </button> *@
             <div class="user-profile" onclick="window.location.href='@Url.Action("Profile", "Doctor", new { id = Model.CurrentDoctor.UserId })'">
                 <img src="@(Model.CurrentDoctor.User?.AvatarUrl ?? "/placeholder.svg?height=32&width=32")" alt="Doctor" class="user-avatar">
                 <div class="user-info">
@@ -701,15 +701,6 @@
                 <div class="stat-content">
                     <h3>@Model.Stats.UnreadMessageCount</h3>
                     <p>Unread Messages</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon yellow">
-                    <i class="fas fa-star"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>@Model.Stats.AverageRating.ToString("F1")</h3>
-                    <p>Average Rating</p>
                 </div>
             </div>
         </div>
@@ -760,108 +751,7 @@
                             }
                         </div>
                     </div>
-                </div>
-
-                <!-- Recent Patients -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h5 class="card-title">Recent Patients</h5>
-                        <a asp-action="Patients" class="view-all-link">View All</a>
-                    </div>
-                    <div class="card-content">
-                        <div class="patients-list" id="recentPatients">
-                            @if (Model.RecentPatients.Any())
-                            {
-                                @foreach (var patient in Model.RecentPatients)
-                                {
-                                    <div class="patient-item">
-                                        <div class="patient-avatar">
-                                            <img src="@(patient.AvatarUrl ?? "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg")"
-                                                 alt="@patient.FullName"
-                                                 onerror="this.src='https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'">
-                                        </div>
-                                        <div class="patient-info">
-                                            <h6>@patient.FullName</h6>
-                                            <p>@(patient.Age != null ? $"{patient.Age} years old" : "Age unknown") • @(patient.Gender ?? "Unknown")</p>
-                                            <small class="text-muted">Last visit: @(patient.LastAppointment?.ToString("MMM dd, yyyy") ?? "No visits")</small>
-                                        </div>
-                                        <div class="patient-actions">
-                                            <a asp-action="PatientDetails" asp-route-id="@patient.UserId" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        </div>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <div class="empty-state">
-                                    <i class="fas fa-user-friends"></i>
-                                    <p>No recent patients</p>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Patient Statistics -->
-                <div class="dashboard-card full-width-card">
-                    <div class="card-header">
-                        <h5 class="card-title">Patient Statistics</h5>
-                    </div>
-                    <div class="card-content">
-                        <div class="patient-stats-grid">
-                            <div class="patient-stat-item">
-                                <div class="stat-header">
-                                    <div class="stat-icon-small bg-primary">
-                                        <i class="fas fa-user-plus"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <h6>New Patients</h6>
-                                        <span class="stat-number">@Model.Stats.NewPatientCount</span>
-                                        <span class="stat-period">This Month</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="patient-stat-item">
-                                <div class="stat-header">
-                                    <div class="stat-icon-small bg-success">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <h6>Completed Visits</h6>
-                                        <span class="stat-number">@Model.Stats.CompletedVisitCount</span>
-                                        <span class="stat-period">Total</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="patient-stat-item">
-                                <div class="stat-header">
-                                    <div class="stat-icon-small bg-warning">
-                                        <i class="fas fa-clock"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <h6>Pending Reviews</h6>
-                                        <span class="stat-number">@Model.Stats.PendingReviewCount</span>
-                                        <span class="stat-period">Awaiting</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="patient-stat-item">
-                                <div class="stat-header">
-                                    <div class="stat-icon-small bg-info">
-                                        <i class="fas fa-calendar-plus"></i>
-                                    </div>
-                                    <div class="stat-info">
-                                        <h6>Follow-ups</h6>
-                                        <span class="stat-number">@Model.Stats.FollowUpCount</span>
-                                        <span class="stat-period">Required</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </div>               
             </div>
 
             <!-- Right Sidebar -->
@@ -909,46 +799,6 @@
                                     <p>Manage availability</p>
                                 </div>
                             </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Urgent Notifications -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h5 class="card-title">Urgent Notifications</h5>
-                    </div>
-                    <div class="card-content">
-                        <div class="notifications-list" id="urgentNotifications">
-                            @if (Model.UrgentNotifications.Any())
-                            {
-                                @foreach (var notification in Model.UrgentNotifications.Take(5))
-                                {
-                                    <div class="notification-item @(!notification.IsRead ? "unread" : "")">
-                                        <div class="notification-icon @notification.Color">
-                                            <i class="@notification.Icon"></i>
-                                        </div>
-                                        <div class="notification-content">
-                                            <h6>@notification.Title</h6>
-                                            <p>@notification.Message</p>
-                                            <small class="text-muted">@notification.TimeDisplay</small>
-                                        </div>
-                                        @if (notification.Type == "appointment")
-                                        {
-                                            <div class="notification-actions">
-                                                <a asp-action="Appointments" class="btn btn-sm btn-outline-primary">View</a>
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <div class="empty-state">
-                                    <i class="fas fa-bell-slash"></i>
-                                    <p>No urgent notifications</p>
-                                </div>
-                            }
                         </div>
                     </div>
                 </div>

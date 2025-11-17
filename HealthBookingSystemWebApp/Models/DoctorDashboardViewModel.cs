@@ -1,9 +1,9 @@
-﻿using BusinessObject.Models;
+﻿using HealthBookingSystemWebApp.DTOs;
 namespace HealthBookingSystem.Models
 {
     public class DoctorDashboardViewModel
     {
-        public Doctor CurrentDoctor { get; set; } = new Doctor();
+        public DoctorDTO CurrentDoctor { get; set; } = new DoctorDTO();
         public DoctorDashboardStats Stats { get; set; } = new DoctorDashboardStats();
         public List<AppointmentViewModel> TodaySchedule { get; set; } = new List<AppointmentViewModel>();
         public List<PatientInfo> RecentPatients { get; set; } = new List<PatientInfo>();
@@ -17,10 +17,6 @@ namespace HealthBookingSystem.Models
         public int TodayAppointmentCount { get; set; }
         public int TotalPatientCount { get; set; }
         public int UnreadMessageCount { get; set; } = 12; // Placeholder
-        public decimal AverageRating { get; set; } = 4.9m; // Placeholder
-        public int NewPatientCount { get; set; }
-        public int CompletedVisitCount { get; set; }
-        public int PendingReviewCount { get; set; }
         public int FollowUpCount { get; set; }
     }
 

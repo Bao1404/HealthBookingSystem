@@ -63,16 +63,12 @@ namespace Repositories.Repositories
                 throw new Exception(ex.Message);
             }
         }
-        public async Task<List<Patient>> GetPatientsByDoctorAsync(int doctorId)
+        public IEnumerable<Patient> GetPatientsByDoctorAsync(int doctorId)
         {
-            return await _context.Patients
-                .Include(p => p.User)
-                .Include(p => p.Appointments)
-                    .ThenInclude(a => a.DoctorUser)
+            return _context.Patients
                 .Where(p => p.Appointments.Any(a => a.DoctorUserId == doctorId))
                 .Distinct()
-                .OrderBy(p => p.User.FullName)
-                .ToListAsync();
+                .OrderBy(p => p.User.FullName);
         }
 
         public async Task<Patient?> GetPatientWithDetailsAsync(int userId)
@@ -149,18 +145,17 @@ namespace Repositories.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Patient>> GetNewPatientsAsync(int doctorId, int daysThreshold = 30)
+        public IEnumerable<Patient> GetNewPatientsAsync(int doctorId, int daysThreshold = 120)
         {
             var cutoffDate = DateTime.Now.AddDays(-daysThreshold);
-            return await _context.Patients
+            return _context.Patients
                 .Include(p => p.User)
                 .Include(p => p.Appointments)
                     .ThenInclude(a => a.DoctorUser)
                 .Where(p => p.Appointments.Any(a => a.DoctorUserId == doctorId) &&
                            p.CreatedAt >= cutoffDate)
                 .Distinct()
-                .OrderByDescending(p => p.CreatedAt)
-                .ToListAsync();
+                .OrderByDescending(p => p.CreatedAt);
         }
 
         public async Task<List<Patient>> GetActivePatientsAsync(int doctorId)

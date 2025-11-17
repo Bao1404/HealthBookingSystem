@@ -178,10 +178,11 @@ namespace Repositories.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Appointment>> GetAppointmentsByWeekAsync(int doctorId, DateTime weekStart)
+        public IEnumerable<Appointment> GetAppointmentsByWeekAsync(int doctorId)
         {
+            var weekStart = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek);
             var weekEnd = weekStart.AddDays(7);
-            return await _context.Appointments
+            return _context.Appointments
                 .Include(a => a.DoctorUser)
                     .ThenInclude(d => d.User)
                 .Include(a => a.DoctorUser)
@@ -192,8 +193,7 @@ namespace Repositories.Repositories
                         && a.AppointmentDateTime >= weekStart 
                         && a.AppointmentDateTime < weekEnd
                         && a.Status != "Cancelled")
-                .OrderBy(a => a.AppointmentDateTime)
-                .ToListAsync();
+                .OrderBy(a => a.AppointmentDateTime);
         }
 
         public async Task<List<Appointment>> GetAppointmentsByMonthAsync(int doctorId, DateTime monthStart)
@@ -229,6 +229,11 @@ namespace Repositories.Repositories
                 .OrderBy(a => a.AppointmentDateTime)
                 .ToListAsync();
         }
-
+        public IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId)
+        {
+            return _context.Appointments
+                .Where(a => a.DoctorUserId == doctorId)
+                .OrderBy(a => a.AppointmentDateTime);
+        } 
     }
 }

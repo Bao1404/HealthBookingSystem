@@ -1,7 +1,9 @@
 ﻿
+using BusinessObject.Models;
 using HealthBookingSystem.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OData;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.ModelBuilder;
 using Repositories;
@@ -24,6 +26,10 @@ namespace HealthBookingSystemAPI
             // Add services to the container.
             builder.Services.AddControllers().AddOData(
                 options => options.Select().Filter().OrderBy().Expand().Count().SetMaxTop(null).AddRouteComponents("odata", modelBuilder.GetEdmModel()));
+
+            builder.Services.AddDbContext<HealthCareSystemContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HealthCareSystemContext")));
+
 
             builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection("Gemini"));
             builder.Services.Configure<GmailApiOption>(builder.Configuration.GetSection("gmailApi"));

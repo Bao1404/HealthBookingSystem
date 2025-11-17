@@ -1,8 +1,11 @@
 using BusinessObject.Models;
+using Google.Apis.Gmail.v1.Data;
 using HealthBookingSystem.Helper;
 using HealthBookingSystem.Models;
 using HealthBookingSystem.Service;
+using HealthBookingSystemWebApp.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Services;
 using Services.Interface;
 using System.Threading.Tasks;
@@ -12,6 +15,8 @@ namespace HealthBookingSystem.Controllers
 {
     public class DoctorController : Controller
     {
+        private readonly HttpClient _httpClient = new HttpClient();
+        private readonly IHubContext<AppointmentHub> _hub;
         private readonly IDoctorService _doctorService;
         private readonly IAppointmentService _appointmentService;
         private readonly IUserService _userService;
@@ -20,8 +25,8 @@ namespace HealthBookingSystem.Controllers
         private readonly PhotoService _photoService;
         private readonly ITimeOffService _timeOffService;
 
-        private int? currentUser => HttpContext.Session.GetInt32("UserId");
-        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService, IUserService userService, IPatientService patientService, GmailHelper gmailHelper, PhotoService photoService, ITimeOffService timeOffService)
+        private int? currentUser => HttpContext.Session.GetInt32("AccountId");
+        public DoctorController(IDoctorService doctorService, IAppointmentService appointmentService, IUserService userService, IPatientService patientService, GmailHelper gmailHelper, PhotoService photoService, ITimeOffService timeOffService, IHttpClientFactory httpClientFactory, IHubContext<AppointmentHub> hub)
         {
             _doctorService = doctorService;
             _appointmentService = appointmentService;
@@ -30,6 +35,8 @@ namespace HealthBookingSystem.Controllers
             _gmailHelper = gmailHelper;
             _photoService = photoService;
             _timeOffService = timeOffService;
+            _httpClient = httpClientFactory.CreateClient("APIClient");
+            _hub = hub;
         }
 
         public async Task<IActionResult> Index()
@@ -57,10 +64,10 @@ namespace HealthBookingSystem.Controllers
             var doctor = await _doctorService.GetDoctorsByIdAsync(currentUser.Value);
 
             var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(user.UserId);
-            var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(user.UserId);
-            var upcomingAppointments = await _appointmentService.GetUpcomingAppointmentsByDoctorAsync(user.UserId);
-            var completedAppointments = await _appointmentService.GetCompletedAppointmentsByDoctorAsync(user.UserId);
-            var cancelledAppointments = await _appointmentService.GetCancelledAppointmentsByDoctorAsync(user.UserId);
+            var todayAppointments = await GetTodayAppointmentsByDoctor(user.UserId);
+            var upcomingAppointments = await GetUpcomingAppointment(user.UserId);
+            var completedAppointments = await GetCompletedAppointmentsByDoctor(user.UserId);
+            var cancelledAppointments = await GetCancelledAppointmentsByDoctor(user.UserId);
 
             ViewBag.PendingAppointments = pendingAppointments;
             ViewBag.TodayAppointments = todayAppointments;
@@ -70,6 +77,35 @@ namespace HealthBookingSystem.Controllers
             ViewBag.PendingCount = pendingAppointments.Count;
 
             return View(doctor);
+        }
+        public async Task<IActionResult> ReloadToday()
+        {
+            var data = await GetTodayAppointmentsByDoctor(currentUser.Value);
+            return PartialView("Partials/DoctorPartials/_TodayAppointment", data);
+        }
+
+        public async Task<IActionResult> ReloadUpcoming()
+        {
+            var data = await GetUpcomingAppointment(currentUser.Value);
+            return PartialView("Partials/DoctorPartials/_UpcommingAppointment", data);
+        }
+
+        public async Task<IActionResult> ReloadPending()
+        {
+            var data = await _appointmentService.GetPendingAppointmentsByDoctorAsync(currentUser.Value);
+            return PartialView("Partials/DoctorPartials/_PendingAppointment", data);
+        }
+
+        public async Task<IActionResult> ReloadCompleted()
+        {
+            var data = await GetCompletedAppointmentsByDoctor(currentUser.Value);
+            return PartialView("Partials/DoctorPartials/_CompletedAppointment", data);
+        }
+
+        public async Task<IActionResult> ReloadCancelled()
+        {
+            var data = await GetCancelledAppointmentsByDoctor(currentUser.Value);
+            return PartialView("Partials/DoctorPartials/_CancelledAppointment", data);
         }
         public async Task<IActionResult> Patients(string filter = "all", string search = "")
         {
@@ -104,55 +140,73 @@ namespace HealthBookingSystem.Controllers
                 return RedirectToAction("Patients");
             }
 
-            var viewModel = await BuildPatientDetailsViewModelAsync(patient, doctorId);
-            return View(viewModel);
+            //var viewModel = await BuildPatientDetailsViewModelAsync(patient, doctorId);
+            //return View(viewModel);
+            return View();
         }
-
+        [HttpPost("appointment/status")]
+        public async Task<IActionResult> UpdateAppointmentStatus(IFormCollection form)
+        {
+            var appointmentId = int.Parse(form["appointmentId"]);
+            var status = form["status"];
+            var appointment = new AppointmentDTO
+            {
+                Status = status
+            };
+            var response = await _httpClient.PutAsJsonAsync($"appointments/{appointmentId}", appointment);
+            if (!response.IsSuccessStatusCode)
+            {
+                return BadRequest("Failed to update appointment status.");
+            }
+            await _hub.Clients.All.SendAsync("ReceiveAppointmentUpdate", appointmentId, status);
+            var upcomingAppointments = await GetUpcomingAppointment(currentUser.Value);
+            return PartialView("Partials/DoctorPartials/_UpcommingAppointment", upcomingAppointments);
+        }
         private async Task<PatientsViewModel> BuildPatientsViewModelAsync(int doctorId, string filter, string search)
         {
-            List<Patient> patients;
+            List<PatientDTO> patients;
 
             // Apply search filter first if provided
             if (!string.IsNullOrEmpty(search))
             {
-                patients = await _patientService.SearchPatientsAsync(doctorId, search);
+                //patients = await _patientService.SearchPatientsAsync(doctorId, search);
             }
             else
             {
                 // Get patients based on filter
                 patients = filter.ToLower() switch
                 {
-                    "active" => await _patientService.GetActivePatientsAsync(doctorId),
-                    "critical" => await _patientService.GetCriticalPatientsAsync(doctorId),
-                    "follow-up" => await _patientService.GetFollowUpPatientsAsync(doctorId),
-                    "new" => await _patientService.GetNewPatientsAsync(doctorId, 30),
-                    _ => await _patientService.GetPatientsByDoctorAsync(doctorId)
+                    //"active" => await _patientService.GetActivePatientsAsync(doctorId),
+                    //"critical" => await _patientService.GetCriticalPatientsAsync(doctorId),
+                    //"follow-up" => await _patientService.GetFollowUpPatientsAsync(doctorId),
+                    //"new" => _patientService.GetNewPatientsAsync(doctorId, 30),
+                    //_ => _patientService.GetPatientsByDoctorAsync(doctorId)
                 };
             }
 
-            var patientInfos = patients.Select(p => MapToPatientInfo(p)).ToList();
+            //var patientInfos = patients.Select(p => MapToPatientInfo(p)).ToList();
 
             // Get counts for filters (always get all data for counts)
-            var allPatients = await _patientService.GetPatientsByDoctorAsync(doctorId);
+            var allPatients = _patientService.GetPatientsByDoctorAsync(doctorId);
             var activePatients = await _patientService.GetActivePatientsAsync(doctorId);
             var criticalPatients = await _patientService.GetCriticalPatientsAsync(doctorId);
             var followUpPatients = await _patientService.GetFollowUpPatientsAsync(doctorId);
-            var newPatients = await _patientService.GetNewPatientsAsync(doctorId, 30);
+            var newPatients = _patientService.GetNewPatientsAsync(doctorId, 30);
 
             return new PatientsViewModel
             {
-                AllPatients = allPatients.Select(p => MapToPatientInfo(p)).ToList(),
-                FilteredPatients = patientInfos,
+                //AllPatients = allPatients.Select(p => MapToPatientInfo(p)).ToList(),
+                //FilteredPatients = patientInfos,
                 CurrentFilter = filter,
-                TotalPatients = allPatients.Count,
+                //TotalPatients = allPatients.Count,
                 ActivePatients = activePatients.Count,
                 CriticalPatients = criticalPatients.Count,
                 FollowUpPatients = followUpPatients.Count,
-                NewPatients = newPatients.Count
+                NewPatients = newPatients.Count()
             };
         }
 
-        private PatientInfo MapToPatientInfo(Patient patient)
+        private PatientInfo MapToPatientInfo(PatientDTO patient)
         {
             var doctorAppointments = patient.Appointments.OrderBy(a => a.AppointmentDateTime).ToList();
             var lastAppointment = doctorAppointments.LastOrDefault(a => a.AppointmentDateTime <= DateTime.Now);
@@ -204,7 +258,7 @@ namespace HealthBookingSystem.Controllers
             };
         }
 
-        private async Task<PatientDetailsViewModel> BuildPatientDetailsViewModelAsync(Patient patient, int doctorId)
+        private async Task<PatientDetailsViewModel> BuildPatientDetailsViewModelAsync(PatientDTO patient, int doctorId)
         {
             var doctorAppointments = patient.Appointments
                 .Where(a => a.DoctorUserId == doctorId)
@@ -244,7 +298,7 @@ namespace HealthBookingSystem.Controllers
             };
         }
 
-        private string GetPatientStatus(Patient patient)
+        private string GetPatientStatus(PatientDTO patient)
         {
             var recentAppointments = patient.Appointments
                 .Where(a => a.AppointmentDateTime >= DateTime.Now.AddDays(-30))
@@ -469,15 +523,15 @@ namespace HealthBookingSystem.Controllers
             {
                 CurrentMonth = currentMonth,
                 DoctorId = doctorId,
-                TodayAppointments = MapToCalendarItems(todayAppointments),
-                UpcomingAppointments = MapToCalendarItems(nextWeekAppointments),
-                CalendarDays = BuildCalendarDays(currentMonth, monthAppointments)
+                //TodayAppointments = MapToCalendarItems(todayAppointments),
+                //UpcomingAppointments = MapToCalendarItems(nextWeekAppointments),
+                //CalendarDays = BuildCalendarDays(currentMonth, monthAppointments)
             };
 
             return calendarViewModel;
         }
 
-        private List<CalendarDay> BuildCalendarDays(DateTime currentMonth, List<Appointment> monthAppointments)
+        private List<CalendarDay> BuildCalendarDays(DateTime currentMonth, List<AppointmentDTO> monthAppointments)
         {
             var calendarDays = new List<CalendarDay>();
 
@@ -506,7 +560,7 @@ namespace HealthBookingSystem.Controllers
             return calendarDays;
         }
 
-        private List<AppointmentCalendarItem> MapToCalendarItems(List<Appointment> appointments)
+        private List<AppointmentCalendarItem> MapToCalendarItems(List<AppointmentDTO> appointments)
         {
             return appointments.Select(a => new AppointmentCalendarItem
             {
@@ -619,7 +673,7 @@ namespace HealthBookingSystem.Controllers
                 }
 
                 // Create new time off
-                var timeOff = new BusinessObject.Models.TimeOff
+                var timeOff = new TimeOffDTO
                 {
                     DoctorUserId = doctorId,
                     Type = request.Type,
@@ -630,16 +684,16 @@ namespace HealthBookingSystem.Controllers
                     Reason = request.Reason
                 };
 
-                var result = await _timeOffService.AddTimeOffAsync(timeOff);
+                //var result = await _timeOffService.AddTimeOffAsync(timeOff);
 
-                if (result)
-                {
-                    return Json(new { success = true, message = "Time off added successfully!" });
-                }
-                else
-                {
-                    return Json(new { success = false, message = "Failed to add time off." });
-                }
+                //if (result)
+                //{
+                //    return Json(new { success = true, message = "Time off added successfully!" });
+                //}
+                //else
+                //{
+                return Json(new { success = false, message = "Failed to add time off." });
+                //}
             }
             catch (Exception ex)
             {
@@ -811,7 +865,7 @@ namespace HealthBookingSystem.Controllers
             var endOfWeek = startOfWeek.AddDays(6);
 
             // Get appointments for the week
-            var weekAppointments = await _appointmentService.GetAppointmentsByWeekAsync(doctorId, startOfWeek);
+            var weekAppointments = await GetAppointmentsByWeekAsync(doctorId);
 
             // Build weekly schedule
             var weeklySchedule = new List<WeeklyScheduleDay>();
@@ -859,7 +913,7 @@ namespace HealthBookingSystem.Controllers
             };
         }
 
-        private List<ScheduleAppointment> MapToScheduleAppointments(List<Appointment> appointments)
+        private List<ScheduleAppointment> MapToScheduleAppointments(List<AppointmentDTO> appointments)
         {
             return appointments.Select(a => new ScheduleAppointment
             {
@@ -877,7 +931,7 @@ namespace HealthBookingSystem.Controllers
             }).ToList();
         }
 
-        private List<TimeSlot> GenerateAvailableSlots(DateTime date, List<Appointment> appointments)
+        private List<TimeSlot> GenerateAvailableSlots(DateTime date, List<AppointmentDTO> appointments)
         {
             var slots = new List<TimeSlot>();
             var startTime = new TimeSpan(9, 0, 0); // 9:00 AM
@@ -907,36 +961,104 @@ namespace HealthBookingSystem.Controllers
 
             return slots;
         }
-
+        private async Task<DoctorDTO> GetDoctorsById(int doctorId)
+        {
+            var request = await _httpClient.GetAsync($"Doctors/{doctorId}");
+            if(request.IsSuccessStatusCode)
+            {
+                var doctor = await request.Content.ReadFromJsonAsync<DoctorDTO>();
+                return doctor;
+            }
+            return new DoctorDTO();
+        }
+        private async Task<List<AppointmentDTO>> GetUpcomingAppointment(int doctorId)
+        {
+            var request = await _httpClient.GetAsync($"Appointments/doctor/{doctorId}?&$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&$filter=Status eq 'Upcoming'&$orderby=AppointmentDateTime asc");
+            if (request.IsSuccessStatusCode)
+            {
+                var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
+                return appointments;
+            }
+            return new List<AppointmentDTO>();
+        }
+        private async Task<List<AppointmentDTO>> GetTodayAppointmentsByDoctor(int doctorId)
+        {
+            var today = DateTime.Today.ToString("yyyy-MM-dd");
+            var filter = $"date(AppointmentDateTime) eq {today} and (Status eq 'Upcoming' or Status eq 'Completed')&$orderby=AppointmentDateTime asc";
+            var request = await _httpClient.GetAsync($"Appointments/doctor/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&filter={filter}");
+            if (request.IsSuccessStatusCode)
+            {
+                var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
+                return appointments;
+            }
+            return new List<AppointmentDTO>();
+        }
+        private async Task<List<AppointmentDTO>> GetCompletedAppointmentsByDoctor(int doctorId)
+        {
+            var filter = $"Status eq 'Completed'&$orderby=AppointmentDateTime asc";
+            var request = await _httpClient.GetAsync($"Appointments/doctor/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&filter={filter}");
+            if (request.IsSuccessStatusCode)
+            {
+                var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
+                return appointments;
+            }
+            return new List<AppointmentDTO>();
+        }
+        private async Task<List<AppointmentDTO>> GetCancelledAppointmentsByDoctor(int doctorId)
+        {
+            var filter = $"Status eq 'Cancelled'&$orderby=AppointmentDateTime asc";
+            var request = await _httpClient.GetAsync($"Appointments/doctor/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&filter={filter}");
+            if (request.IsSuccessStatusCode)
+            {
+                var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
+                return appointments;
+            }
+            return new List<AppointmentDTO>();
+        }
+        private async Task<List<PatientDTO>> GetPatientsByDoctor(int doctorId)
+        {
+            var request = await _httpClient.GetAsync($"Patients/doctor/{doctorId}?$expand=Appointments,MedicalHistories,User");
+            if (request.IsSuccessStatusCode)
+            {
+                var patients = await request.Content.ReadFromJsonAsync<List<PatientDTO>>();
+                return patients;
+            }
+            return new List<PatientDTO>();
+        }
+        private async Task<List<AppointmentDTO>> GetAppointmentsByWeekAsync(int doctorId)
+        {
+            var request = await _httpClient.GetAsync($"Appointments/doctor-week/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser");
+            if (request.IsSuccessStatusCode)
+            {
+                var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
+                return appointments;
+            }
+            return new List<AppointmentDTO>();
+        }
         private async Task<DoctorDashboardViewModel> BuildDashboardViewModelAsync(int doctorId)
         {
             // Get current doctor information
-            var currentDoctor = await _doctorService.GetDoctorsByIdAsync(doctorId);
+            var currentDoctor = await GetDoctorsById(doctorId);
 
             // Get appointments data
-            var todayAppointments = await _appointmentService.GetTodayAppointmentsByDoctorAsync(doctorId);
-            var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(doctorId);
-            var completedAppointments = await _appointmentService.GetCompletedAppointmentsByDoctorAsync(doctorId);
+            var todayAppointments = await GetTodayAppointmentsByDoctor(doctorId);
+            //var pendingAppointments = await _appointmentService.GetPendingAppointmentsByDoctorAsync(doctorId);
+            var completedAppointments = await GetCompletedAppointmentsByDoctor(doctorId);
 
             // Get patients data
-            var allPatients = await _patientService.GetPatientsByDoctorAsync(doctorId);
-            var newPatients = await _patientService.GetNewPatientsAsync(doctorId, 30);
+            var allPatients = await GetPatientsByDoctor(doctorId);
             var followUpPatients = await _patientService.GetFollowUpPatientsAsync(doctorId);
 
             // Get weekly stats
             var weekStart = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek);
-            var weeklyAppointments = await _appointmentService.GetAppointmentsByWeekAsync(doctorId, weekStart);
+            var weeklyAppointments = await GetAppointmentsByWeekAsync(doctorId);
 
             // Build dashboard stats
             var stats = new DoctorDashboardStats
             {
                 TodayAppointmentCount = todayAppointments.Count,
-                TotalPatientCount = allPatients.Count,
+                //TotalPatientCount = allPatients.Count,
                 UnreadMessageCount = 12, // TODO: Implement message service
-                AverageRating = currentDoctor?.Rating ?? 4.9m,
-                NewPatientCount = newPatients.Count,
-                CompletedVisitCount = completedAppointments.Count,
-                PendingReviewCount = pendingAppointments.Count(a => a.Notes?.ToLower().Contains("review") == true),
                 FollowUpCount = followUpPatients.Count
             };
 
@@ -944,7 +1066,7 @@ namespace HealthBookingSystem.Controllers
             var weeklyStats = new WeeklyStats
             {
                 WeeklyAppointmentCount = weeklyAppointments.Count,
-                WeeklyNewPatientCount = newPatients.Count(p => p.CreatedAt >= weekStart),
+                //WeeklyNewPatientCount = newPatients.Count(p => p.CreatedAt >= weekStart),
                 WeeklyFollowUpCount = weeklyAppointments.Count(a => a.Notes?.ToLower().Contains("follow") == true)
             };
 
@@ -955,7 +1077,7 @@ namespace HealthBookingSystem.Controllers
                 AppointmentDateTime = a.AppointmentDateTime,
                 Status = a.Status ?? "Unknown",
                 Notes = a.Notes ?? "",
-                PatientName = a.PatientUser?.User?.FullName ?? "Unknown Patient",
+                PatientName = a.PatientUser.User.FullName ?? "Unknown Patient",
                 DoctorName = a.DoctorUser?.User?.FullName ?? "Unknown Doctor",
                 SpecialtyName = a.DoctorUser?.Specialty?.Name ?? "General",
                 DoctorAvatarUrl = a.PatientUser?.User?.AvatarUrl ?? "/images/default-patient.png",
@@ -970,36 +1092,22 @@ namespace HealthBookingSystem.Controllers
                 .Select(p => MapToPatientInfo(p))
                 .ToList();
 
-            // Build urgent notifications (mock data for now)
-            var urgentNotifications = BuildUrgentNotifications(pendingAppointments, followUpPatients);
+            //// Build urgent notifications (mock data for now)
+            //var urgentNotifications = BuildUrgentNotifications(pendingAppointments, followUpPatients);
 
-            // Map pending appointments
-            var mappedPendingAppointments = pendingAppointments.Select(a => new AppointmentViewModel
-            {
-                AppointmentId = a.AppointmentId,
-                AppointmentDateTime = a.AppointmentDateTime,
-                Status = a.Status ?? "Unknown",
-                Notes = a.Notes ?? "",
-                PatientName = a.PatientUser?.User?.FullName ?? "Unknown Patient",
-                DoctorName = a.DoctorUser?.User?.FullName ?? "Unknown Doctor",
-                SpecialtyName = a.DoctorUser?.Specialty?.Name ?? "General",
-                DoctorAvatarUrl = a.PatientUser?.User?.AvatarUrl ?? "/images/default-patient.png",
-                CreatedAt = a.CreatedAt ?? DateTime.Now
-            }).ToList();
 
             return new DoctorDashboardViewModel
             {
-                CurrentDoctor = currentDoctor ?? new Doctor(),
+                CurrentDoctor = currentDoctor ?? new DoctorDTO(),
                 Stats = stats,
                 TodaySchedule = todaySchedule,
                 RecentPatients = recentPatients,
-                UrgentNotifications = urgentNotifications,
-                WeeklyStats = weeklyStats,
-                PendingAppointments = mappedPendingAppointments
+                //UrgentNotifications = urgentNotifications,
+                WeeklyStats = weeklyStats
             };
         }
 
-        private List<NotificationItem> BuildUrgentNotifications(List<Appointment> pendingAppointments, List<Patient> followUpPatients)
+        private List<NotificationItem> BuildUrgentNotifications(List<AppointmentDTO> pendingAppointments, List<PatientDTO> followUpPatients)
         {
             var notifications = new List<NotificationItem>();
 

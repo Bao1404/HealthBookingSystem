@@ -24,9 +24,9 @@ namespace Services.Service
         public Task CreatePatient(Patient patient) => _patientRepository.CreatePatient(patient);
         public Task<Patient?> GetByUserIdAsync(int userId) => _patientRepository.GetByUserIdAsync(userId);
         public Task<List<Patient>> GetAllPatientsAsync() => _patientRepository.GetAllPatientsAsync();
-        public async Task<List<Patient>> GetPatientsByDoctorAsync(int doctorId)
+        public IEnumerable<Patient> GetPatientsByDoctorAsync(int doctorId)
         {
-            return await _patientRepository.GetPatientsByDoctorAsync(doctorId);
+            return _patientRepository.GetPatientsByDoctorAsync(doctorId);
         }
 
         public async Task<Patient?> GetPatientWithDetailsAsync(int userId)
@@ -54,9 +54,9 @@ namespace Services.Service
             return await _patientRepository.GetFollowUpPatientsAsync(doctorId);
         }
 
-        public async Task<List<Patient>> GetNewPatientsAsync(int doctorId, int daysThreshold = 30)
+        public IEnumerable<Patient> GetNewPatientsAsync(int doctorId, int daysThreshold = 30)
         {
-            return await _patientRepository.GetNewPatientsAsync(doctorId, daysThreshold);
+            return _patientRepository.GetNewPatientsAsync(doctorId, daysThreshold);
         }
 
         public async Task<List<Patient>> GetActivePatientsAsync(int doctorId)
