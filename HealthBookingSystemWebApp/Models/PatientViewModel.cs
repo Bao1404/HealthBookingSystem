@@ -56,7 +56,7 @@ namespace HealthBookingSystem.Models
     {
         public PatientInfo Patient { get; set; } = new PatientInfo();
         public List<AppointmentHistory> AppointmentHistory { get; set; } = new List<AppointmentHistory>();
-        public List<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
+        public List<MedicalRecordDTO> MedicalRecords { get; set; } = new List<MedicalRecordDTO>();
         public PatientStatistics Statistics { get; set; } = new PatientStatistics();
     }
 

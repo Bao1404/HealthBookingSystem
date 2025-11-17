@@ -622,11 +622,11 @@ namespace HealthCareSystem.Controllers
                     .Take(filter.PageSize)
                     .ToList();
 
-                var userDtos = paginatedUsers.Select(MapToUserDto).ToList();
+                //var userDtos = paginatedUsers.Select(MapToUserDto).ToList();
 
                 var response = new UserListResponseDto
                 {
-                    Users = userDtos,
+                    //Users = userDtos,
                     TotalCount = totalCount,
                     Page = filter.Page,
                     PageSize = filter.PageSize,
@@ -658,7 +658,7 @@ namespace HealthCareSystem.Controllers
                     return BadRequest(new { error = "User with this email already exists" });
                 }
 
-                var user = new User
+                var user = new UserDTO
                 {
                     FullName = createUserDto.FullName,
                     Email = createUserDto.Email,
@@ -670,7 +670,7 @@ namespace HealthCareSystem.Controllers
                     UpdatedAt = DateTime.Now
                 };
 
-                await _userService.CreateUser(user);
+                //await _userService.CreateUser(user);
 
                 // TODO: Send welcome email if requested
                 if (createUserDto.SendWelcomeEmail)
@@ -799,9 +799,9 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var testUsers = new List<User>
+                var testUsers = new List<UserDTO>
                 {
-                    new User
+                    new UserDTO
                     {
                         FullName = "Dr. John Smith",
                         Email = "doctor.john@test.com",
@@ -812,7 +812,7 @@ namespace HealthCareSystem.Controllers
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now
                     },
-                    new User
+                    new UserDTO
                     {
                         FullName = "Admin User",
                         Email = "admin@test.com",
@@ -823,7 +823,7 @@ namespace HealthCareSystem.Controllers
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now
                     },
-                    new User
+                    new UserDTO
                     {
                         FullName = "Staff Member",
                         Email = "staff@test.com",
@@ -841,7 +841,7 @@ namespace HealthCareSystem.Controllers
                     var existingUser = await _userService.CheckUserExist(user.Email);
                     if (existingUser == null)
                     {
-                        await _userService.CreateUser(user);
+                        //await _userService.CreateUser(user);
                     }
                 }
 
@@ -896,7 +896,7 @@ namespace HealthCareSystem.Controllers
             }
         }
 
-        private UserDto MapToUserDto(User user)
+        private UserDto MapToUserDto(UserDTO user)
         {
             return new UserDto
             {

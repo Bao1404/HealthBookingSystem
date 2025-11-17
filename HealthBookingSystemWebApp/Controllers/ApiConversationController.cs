@@ -1,6 +1,7 @@
 ﻿using BusinessObject.Models;
 using HealthCareSystem.Controllers.dto;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
 using Repositories.IRepositories;
 
 namespace HealthCareSystem.Controllers
@@ -103,17 +104,18 @@ namespace HealthCareSystem.Controllers
             try
             {
                 // Tạo một cuộc trò chuyện mới
-                var conversation = new Conversation
-                {
-                    PatientUserId = model.PatientUserId,
-                    DoctorUserId = model.DoctorUserId,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                //var conversation = new ConversationDTO
+                //{
+                //    PatientUserId = model.PatientUserId,
+                //    DoctorUserId = model.DoctorUserId,
+                //    CreatedAt = DateTime.UtcNow,
+                //    UpdatedAt = DateTime.UtcNow
+                //};
 
-                await _conversationRepository.CreateAsync(conversation);
+                //await _conversationRepository.CreateAsync(conversation);
 
-                return Ok(conversation);
+                //return Ok(conversation);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -143,19 +145,20 @@ namespace HealthCareSystem.Controllers
                 else
                 {
                     // Nếu không có cuộc trò chuyện, tạo cuộc trò chuyện mới
-                    var newConversation = new Conversation
-                    {
-                        PatientUserId = (int)patientId,
-                        DoctorUserId = doctorId,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
+                    //var newConversation = new ConversationDTO
+                    //{
+                    //    PatientUserId = (int)patientId,
+                    //    DoctorUserId = doctorId,
+                    //    CreatedAt = DateTime.UtcNow,
+                    //    UpdatedAt = DateTime.UtcNow
+                    //};
 
-                    // Tạo cuộc trò chuyện mới
-                    var createdConversation = await _conversationRepository.CreateAsync(newConversation);
+                    //// Tạo cuộc trò chuyện mới
+                    //var createdConversation = await _conversationRepository.CreateAsync(newConversation);
 
                     // Trả về thông tin cuộc trò chuyện mới đã tạo
-                    return Ok(new { success = false, conversationId = createdConversation.ConversationId });
+                    //return Ok(new { success = false, conversationId = createdConversation.ConversationId });
+                    return Ok();
                 }
             }
             catch (Exception ex)

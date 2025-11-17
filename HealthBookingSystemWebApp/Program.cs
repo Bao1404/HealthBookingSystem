@@ -110,6 +110,7 @@ namespace HealthBookingSystem
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatHub>("/chathub");
+                endpoints.MapHub<AppointmentHub>("/appointmentHub");
                 endpoints.MapRazorPages();
                 endpoints.MapControllerRoute(
                     name: "default",

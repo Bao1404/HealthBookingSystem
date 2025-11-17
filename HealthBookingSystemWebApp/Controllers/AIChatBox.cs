@@ -1,5 +1,5 @@
 ﻿using BusinessObject.Models;
-using HealthBookingSystem.DTO;
+using HealthBookingSystem.DTOs;
 using HealthBookingSystem.Mapper;
 using HealthBookingSystem.Models;
 using Microsoft.AspNetCore.Http;

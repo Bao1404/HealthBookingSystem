@@ -25,7 +25,8 @@ namespace Repositories.Interface
         Task<List<Appointment>> GetCompletedAppointmentsByDoctorAsync(int doctorId);
         Task<List<Appointment>> GetCancelledAppointmentsByDoctorAsync(int doctorId);
         Task<List<Appointment>> GetAppointmentsByDoctorAndStatusAsync(int doctorId, string status);
-        Task<List<Appointment>> GetAppointmentsByWeekAsync(int doctorId, DateTime weekStart);
+        IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId);
+        IEnumerable<Appointment> GetAppointmentsByWeekAsync(int doctorId);
         Task<List<Appointment>> GetAppointmentsByMonthAsync(int doctorId, DateTime monthStart);
         Task<List<Appointment>> GetAppointmentsByDateAsync(int doctorId, DateTime date);
     }
