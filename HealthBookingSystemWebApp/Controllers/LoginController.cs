@@ -1,4 +1,5 @@
 ﻿using HealthBookingSystem.Models;
+using HealthBookingSystemWebApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interface;
 
@@ -6,16 +7,16 @@ namespace HealthBookingSystem.Controllers
 {
     public class LoginController : Controller
     {
-        private readonly IUserService _userService;
-        public LoginController(IUserService userService)
+        private readonly HttpClient _httpClient = new HttpClient();
+        public LoginController(IHttpClientFactory httpClientFactory)
         {
-            _userService = userService;
+            _httpClient = httpClientFactory.CreateClient("APIClient");
         }
         public IActionResult Index()
         {
             return View();
         }
-        [HttpPost("/Login")]
+        [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginViewModel vm)
         {
             if (!ModelState.IsValid)
@@ -23,29 +24,27 @@ namespace HealthBookingSystem.Controllers
                 return View("Index", vm);
             }
 
-            string email = vm.Email;
-            string password = vm.Password;
-
-            var account = await _userService.Login(email, password);
-            if (account != null)
+            var response = await _httpClient.PostAsJsonAsync("Auth/login", vm);
+            if (response.IsSuccessStatusCode)
             {
-                HttpContext.Session.SetInt32("UserId", account.UserId);
+                var result = await response.Content.ReadFromJsonAsync<AccountViewModel>();
 
-                if (account.Role.Equals("Patient"))
+                if (result != null)
                 {
-                    return RedirectToAction("Index", "User");
-                }
-                if (account.Role.Equals("Doctor"))
-                {
-                    return RedirectToAction("Index", "Doctor");
-                }
-                if (account.Role.Equals("Admin"))
-                {
-                    return RedirectToAction("Index", "Admin");
+                    HttpContext.Session.SetString("Token", result.Token);
+                    HttpContext.Session.SetString("Role", result.Role);
+                    HttpContext.Session.SetInt32("AccountId", result.AccountId);
+                    if (result.Role.Equals("Patient"))
+                    {
+                        return RedirectToAction("Index", "User");
+                    }
+                    else if (result.Role.Equals("Doctor"))
+                    {
+                        return RedirectToAction("Index", "Doctor");
+                    }
                 }
             }
-            ViewBag.ErrorMessage = "Invalid email or password.";
-            return View("Index", vm);
+            return View();
         }
     }
 }

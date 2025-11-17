@@ -48,14 +48,14 @@ namespace Services.Service
         public async Task<List<Appointment>> GetAppointmentsByDoctorAndStatusAsync(int doctorId, string status) =>
             await _appointmentRepository.GetAppointmentsByDoctorAndStatusAsync(doctorId, status);
 
-        public async Task<List<Appointment>> GetAppointmentsByWeekAsync(int doctorId, DateTime weekStart) =>
-            await _appointmentRepository.GetAppointmentsByWeekAsync(doctorId, weekStart);
+        public IEnumerable<Appointment> GetAppointmentsByWeekAsync(int doctorId) =>
+            _appointmentRepository.GetAppointmentsByWeekAsync(doctorId);
 
         public async Task<List<Appointment>> GetAppointmentsByMonthAsync(int doctorId, DateTime monthStart) =>
             await _appointmentRepository.GetAppointmentsByMonthAsync(doctorId, monthStart);
         public async Task<List<Appointment>> GetAppointmentsByDateAsync(int doctorId, DateTime date) =>
             await _appointmentRepository.GetAppointmentsByDateAsync(doctorId, date);
-
+        public IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId) => _appointmentRepository.GetAppointmentsByDoctorId(doctorId);
         public async Task<bool> ApproveAppointmentAsync(int appointmentId, int doctorId)
         {
             try

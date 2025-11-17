@@ -52,17 +52,17 @@ namespace HealthBookingSystem.Controllers
 
             var dashboardModel = new DashboardViewModel
             {
-                CurrentUser = user,
-                UpcomingAppointments = GetUpcomingAppointments(userAppointments),
-                RecentAppointments = GetRecentAppointments(userAppointments),
-                TodayAppointments = GetTodayAppointments(userAppointments),
-                Stats = CalculateStats(userAppointments)
+                //CurrentUser = user,
+                //UpcomingAppointments = GetUpcomingAppointments(userAppointments),
+                //RecentAppointments = GetRecentAppointments(userAppointments),
+                //TodayAppointments = GetTodayAppointments(userAppointments),
+                //Stats = CalculateStats(userAppointments)
             };
 
             return View("Index", dashboardModel);
         }
 
-        private List<AppointmentViewModel> GetUpcomingAppointments(List<Appointment> appointments)
+        private List<AppointmentViewModel> GetUpcomingAppointments(List<AppointmentDTO> appointments)
         {
             return appointments
                 .Where(a => a.AppointmentDateTime > DateTime.Now && (a.Status == "Pending" || a.Status == "Confirmed"))
@@ -82,7 +82,7 @@ namespace HealthBookingSystem.Controllers
                 }).ToList();
         }
 
-        private List<AppointmentViewModel> GetRecentAppointments(List<Appointment> appointments)
+        private List<AppointmentViewModel> GetRecentAppointments(List<AppointmentDTO> appointments)
         {
             return appointments
                 .Where(a => a.AppointmentDateTime <= DateTime.Now)
@@ -102,7 +102,7 @@ namespace HealthBookingSystem.Controllers
                 }).ToList();
         }
 
-        private List<AppointmentViewModel> GetTodayAppointments(List<Appointment> appointments)
+        private List<AppointmentViewModel> GetTodayAppointments(List<AppointmentDTO> appointments)
         {
             return appointments
                 .Where(a => a.AppointmentDateTime.Date == DateTime.Today && (a.Status == "Pending" || a.Status == "Confirmed"))
@@ -121,7 +121,7 @@ namespace HealthBookingSystem.Controllers
                 }).ToList();
         }
 
-        private DashboardStats CalculateStats(List<Appointment> appointments)
+        private DashboardStats CalculateStats(List<AppointmentDTO> appointments)
         {
             var now = DateTime.Now;
             var weekStart = now.AddDays(-(int)now.DayOfWeek);
@@ -173,7 +173,7 @@ namespace HealthBookingSystem.Controllers
 
 
             // Add appointment data to ViewBag for the appointments list
-            ViewBag.UpcomingAppointments = GetUpcomingAppointments(userAppointments);
+            //ViewBag.UpcomingAppointments = GetUpcomingAppointments(userAppointments);
 
             ViewBag.PastAppointments = userAppointments
                 .Where(a => a.AppointmentDateTime <= DateTime.Now)
@@ -235,15 +235,15 @@ namespace HealthBookingSystem.Controllers
                 }).ToList();
 
             // Prepare calendar data
-            ViewBag.TodayAppointments = GetTodayAppointments(userAppointments);
-            ViewBag.WeekAppointments = GetWeekAppointments(userAppointments);
-            ViewBag.MonthAppointments = GetMonthAppointments(userAppointments);
+            //ViewBag.TodayAppointments = GetTodayAppointments(userAppointments);
+            //ViewBag.WeekAppointments = GetWeekAppointments(userAppointments);
+            //ViewBag.MonthAppointments = GetMonthAppointments(userAppointments);
             ViewBag.CurrentDate = DateTime.Now;
 
             return View(model);
         }
 
-        private List<AppointmentViewModel> GetWeekAppointments(List<Appointment> appointments)
+        private List<AppointmentViewModel> GetWeekAppointments(List<AppointmentDTO> appointments)
         {
             var startOfWeek = DateTime.Now.Date.AddDays(-(int)DateTime.Now.DayOfWeek);
             var endOfWeek = startOfWeek.AddDays(7);
@@ -267,7 +267,7 @@ namespace HealthBookingSystem.Controllers
                 }).ToList();
         }
 
-        private List<AppointmentViewModel> GetMonthAppointments(List<Appointment> appointments)
+        private List<AppointmentViewModel> GetMonthAppointments(List<AppointmentDTO> appointments)
         {
             var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             var endOfMonth = startOfMonth.AddMonths(1);
@@ -595,18 +595,18 @@ namespace HealthBookingSystem.Controllers
                     return RedirectToAction("Appointments");
                 }
 
-                var appointment = new Appointment
-                {
-                    PatientUserId = currentUserId.Value,
-                    DoctorUserId = model.DoctorUserId,
-                    AppointmentDateTime = appointmentDateTime,
-                    Status = "Pending",
-                    Notes = model.Notes,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
-                };
+                //var appointment = new AppointmentDTO
+                //{
+                //    PatientUserId = currentUserId.Value,
+                //    DoctorUserId = model.DoctorUserId,
+                //    AppointmentDateTime = appointmentDateTime,
+                //    Status = "Pending",
+                //    Notes = model.Notes,
+                //    CreatedAt = DateTime.Now,
+                //    UpdatedAt = DateTime.Now
+                //};
 
-                await _appointmentService.AddAppointmentAsync(appointment);
+                //await _appointmentService.AddAppointmentAsync(appointment);
                 TempData["Success"] = "Appointment booked successfully!";
                 return RedirectToAction("Appointments");
             }

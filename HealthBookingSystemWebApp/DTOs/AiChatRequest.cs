@@ -1,4 +1,4 @@
-﻿namespace HealthBookingSystem.DTO
+﻿namespace HealthBookingSystem.DTOs
 {
     public class AiChatRequest
     {
