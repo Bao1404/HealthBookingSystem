@@ -29,7 +29,7 @@ namespace Services.Interface
         Task<bool> ApproveAppointmentAsync(int appointmentId, int doctorId);
         Task<bool> RejectAppointmentAsync(int appointmentId, int doctorId, string? reason = null);
         IEnumerable<Appointment> GetAppointmentsByWeekAsync(int doctorId);
-        Task<List<Appointment>> GetAppointmentsByMonthAsync(int doctorId, DateTime monthStart);
+        IEnumerable<Appointment> GetAppointmentsByMonthAsync(int doctorId);
         Task<List<Appointment>> GetAppointmentsByDateAsync(int doctorId, DateTime date);
     }
 }

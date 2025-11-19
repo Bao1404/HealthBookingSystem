@@ -140,7 +140,6 @@ function updateScheduleGrid(weeklySchedule) {
                 cellContent = `
                     <div class="appointment-block">
                         <div class="appointment-patient">${appointment.patientName}</div>
-                        <div class="appointment-type">${appointment.appointmentType}</div>
                         <span class="badge badge-${appointment.statusColor}">${appointment.status}</span>
                     </div>
                 `

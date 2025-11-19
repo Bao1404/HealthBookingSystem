@@ -178,40 +178,36 @@ namespace Repositories.Repositories
                 .ToListAsync();
         }
 
-        public IEnumerable<Appointment> GetAppointmentsByWeekAsync(int doctorId)
+        public IEnumerable<Appointment> GetAppointmentsByWeekAsync(int userId)
         {
-            var weekStart = DateTime.Now.AddDays(-(int)DateTime.Now.DayOfWeek);
+            var today = DateTime.Today;
+
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var weekStart = today.AddDays(-diff);     // Monday
             var weekEnd = weekStart.AddDays(7);
             return _context.Appointments
-                .Include(a => a.DoctorUser)
-                    .ThenInclude(d => d.User)
-                .Include(a => a.DoctorUser)
-                    .ThenInclude(d => d.Specialty)
-                .Include(a => a.PatientUser)
-                    .ThenInclude(p => p.User)
-                .Where(a => a.DoctorUserId == doctorId 
+                .Where(a => a.DoctorUserId == userId
                         && a.AppointmentDateTime >= weekStart 
+                        && a.AppointmentDateTime < weekEnd
+                        && a.Status != "Cancelled" ||
+                        a.PatientUserId == userId
+                        && a.AppointmentDateTime >= weekStart
                         && a.AppointmentDateTime < weekEnd
                         && a.Status != "Cancelled")
                 .OrderBy(a => a.AppointmentDateTime);
         }
 
-        public async Task<List<Appointment>> GetAppointmentsByMonthAsync(int doctorId, DateTime monthStart)
+        public IEnumerable<Appointment> GetAppointmentsByMonthAsync(int doctorId)
         {
+            var monthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             var monthEnd = monthStart.AddMonths(1);
-            return await _context.Appointments
-                .Include(a => a.DoctorUser)
-                    .ThenInclude(d => d.User)
-                .Include(a => a.DoctorUser)
-                    .ThenInclude(d => d.Specialty)
-                .Include(a => a.PatientUser)
-                    .ThenInclude(p => p.User)
-                .Where(a => a.DoctorUserId == doctorId 
-                        && a.AppointmentDateTime >= monthStart 
-                        && a.AppointmentDateTime < monthEnd
-                        && a.Status != "Cancelled")
-                .OrderBy(a => a.AppointmentDateTime)
-                .ToListAsync();
+
+            return _context.Appointments
+                .Where(a => a.DoctorUserId == doctorId
+                         && a.AppointmentDateTime >= monthStart
+                         && a.AppointmentDateTime < monthEnd
+                         && a.Status != "Cancelled")
+                .OrderBy(a => a.AppointmentDateTime);
         }
 
         public async Task<List<Appointment>> GetAppointmentsByDateAsync(int doctorId, DateTime date)

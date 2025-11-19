@@ -2,9 +2,9 @@
 @*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@if (ViewBag.CompletedAppointments != null)
+@if (Model.Any())
 {
-    @foreach (var appointment in (List<AppointmentDTO>)ViewBag.CompletedAppointments)
+    @foreach (var appointment in Model)
     {
         <div class="appointment-item-detailed">
             <div class="appointment-header">
@@ -23,7 +23,7 @@
                 <p><strong>Notes:</strong> @(appointment.Notes ?? "No additional notes")</p>
             </div>
             <div class="appointment-actions">
-                <a asp-action="AppointmentDetails" asp-route-id="@appointment.AppointmentId" class="btn btn-info btn-sm">
+                <a asp-action="AppointmentDetails" asp-route-id="@appointment.AppointmentId" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-eye"></i> Details
                 </a>
             </div>

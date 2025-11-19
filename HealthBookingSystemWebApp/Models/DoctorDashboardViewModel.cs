@@ -5,11 +5,10 @@ namespace HealthBookingSystem.Models
     {
         public DoctorDTO CurrentDoctor { get; set; } = new DoctorDTO();
         public DoctorDashboardStats Stats { get; set; } = new DoctorDashboardStats();
-        public List<AppointmentViewModel> TodaySchedule { get; set; } = new List<AppointmentViewModel>();
-        public List<PatientInfo> RecentPatients { get; set; } = new List<PatientInfo>();
+        public List<AppointmentDTO> TodaySchedule { get; set; } = new List<AppointmentDTO>();
+        public List<AppointmentDTO> WeekSchedule { get; set; } = new List<AppointmentDTO>();
         public List<NotificationItem> UrgentNotifications { get; set; } = new List<NotificationItem>();
         public WeeklyStats WeeklyStats { get; set; } = new WeeklyStats();
-        public List<AppointmentViewModel> PendingAppointments { get; set; } = new List<AppointmentViewModel>();
     }
 
     public class DoctorDashboardStats

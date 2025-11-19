@@ -9,7 +9,7 @@ namespace Services.Interface
 {
     public interface ISpecialtyService
     {
-        Task<List<Specialty>> GetAllSpecialtiesAsync();
+        IEnumerable<Specialty> GetAllSpecialtiesAsync();
         Task<Specialty> GetSpecialtyByName(string name);
     }
 }

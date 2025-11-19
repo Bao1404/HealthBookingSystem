@@ -65,9 +65,13 @@
         color: white;
     }
 
-    .stat-icon.blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+    .stat-icon-small.blue { background-color: var(--primary-color); }
     .stat-icon.green { background: linear-gradient(135deg, #56ab2f, #a8e6cf); }
-    .stat-icon.cyan { background: linear-gradient(135deg, #00d2ff, #3a7bd5); }
+
+    .stat-icon.cyan {
+        background: var(--accent-color)
+    }
+
     .stat-icon.yellow { background: linear-gradient(135deg, #f093fb, #f5576c); }
 
     .stat-content h3 {
@@ -210,6 +214,11 @@
     .status-completed {
         background: #d4edda;
         color: #155724;
+    }
+
+    .status-upcoming{
+        color: #3b82f6;
+        background: #dbeafe;
     }
 
     .status-pending {
@@ -694,7 +703,7 @@
                     <p>Total Patients</p>
                 </div>
             </div>
-            <div class="stat-card">
+            @* <div class="stat-card">
                 <div class="stat-icon cyan">
                     <i class="fas fa-envelope"></i>
                 </div>
@@ -702,7 +711,7 @@
                     <h3>@Model.Stats.UnreadMessageCount</h3>
                     <p>Unread Messages</p>
                 </div>
-            </div>
+            </div> *@
         </div>
 
         <!-- Dashboard Layout with Sidebar -->
@@ -713,45 +722,25 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h5 class="card-title">Today's Schedule</h5>
-                        <a asp-action="Appointments" class="view-all-link">View All</a>
+                        <a asp-action="Appointments" class="view-all-link" style="text-decoration: none;">View All</a>
                     </div>
                     <div class="card-content">
                         <div class="appointments-list" id="todaySchedule">
-                            @if (Model.TodaySchedule.Any())
-                            {
-                                @foreach (var appointment in Model.TodaySchedule)
-                                {
-                                    <div class="appointment-item">
-                                        <div class="appointment-time">
-                                            <span class="time">@appointment.AppointmentDateTime.ToString("HH:mm")</span>
-                                            <span class="date">@appointment.AppointmentDateTime.ToString("MMM dd")</span>
-                                        </div>
-                                        <div class="appointment-info">
-                                            <h6>@appointment.PatientName</h6>
-                                            <p>@(string.IsNullOrEmpty(appointment.Notes) ? "General Consultation" : appointment.Notes)</p>
-                                            <span class="status-badge status-@appointment.Status.ToLower()">@appointment.Status</span>
-                                        </div>
-                                        <div class="appointment-actions">
-                                            @if (appointment.Status == "Confirmed")
-                                            {
-                                                <button class="btn btn-sm btn-success" onclick="completeAppointment(@appointment.AppointmentId)">
-                                                    <i class="fas fa-check"></i> Complete
-                                                </button>
-                                            }
-                                        </div>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <div class="empty-state">
-                                    <i class="fas fa-calendar-day"></i>
-                                    <p>No appointments scheduled for today</p>
-                                </div>
-                            }
+                            <partial name="Partials/DoctorPartials/_DashboardTodayAppointment" model="@Model.TodaySchedule" />
                         </div>
                     </div>
-                </div>               
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">This Week's Schedule</h5>
+                        <a asp-action="Appointments" class="view-all-link" style="text-decoration: none;">View All</a>
+                    </div>
+                    <div class="card-content">
+                        <div class="appointments-list" id="weekSchedule">
+                            <partial name="Partials/DoctorPartials/_WeekAppointment" model="@Model.WeekSchedule"/>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Sidebar -->

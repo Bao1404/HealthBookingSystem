@@ -1,6 +1,7 @@
 ﻿using BusinessObject.Models;
 using Microsoft.EntityFrameworkCore;
 using Repositories.Interface;
+using System.Collections;
 
 namespace Repositories.Repositories
 {
@@ -11,9 +12,9 @@ namespace Repositories.Repositories
         {
             _context = context;
         }
-        public async Task<List<Specialty>> GetAllSpecialtiesAsync()
+        public IEnumerable<Specialty> GetAllSpecialtiesAsync()
         {
-            return await _context.Specialties.ToListAsync();
+            return _context.Specialties;
         }
         public async Task<Specialty> GetSpecialtyByName(string name)
         {

@@ -16,10 +16,6 @@
             <input type="text" class="search-input" placeholder="Search conversations..." id="searchInput">
         </div> *@
         <div class="header-actions">
-            <button class="notification-btn">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">5</span>
-            </button>
             <a class="user-profile" asp-action="Profile" asp-controller="Doctor" style="text-decoration: none;">
                 <img src="@Model.User.AvatarUrl" alt="Doctor" class="user-avatar">
                 <div class="user-info">
@@ -37,9 +33,6 @@
             <div class="dashboard-card conversations-panel">
                 <div class="card-header">
                     <h5 class="card-title">Patient Conversations</h5>
-                    <button class="btn btn-sm btn-primary" onclick="startNewConversation()">
-                        <i class="fas fa-plus"></i>
-                    </button>
                 </div>
                 <div class="conversations-list" id="conversationsList">
                     <!-- Populated by JavaScript -->
@@ -57,11 +50,6 @@
                                 <h6 id="chatPatientName">John Doe</h6>
                                 <p id="chatPatientInfo">Age 45 • Hypertension</p>
                             </div>
-                        </div>
-                        <div class="chat-actions">
-                            <button class="chat-action-btn" onclick="startVoiceCall()" title="Voice Call">
-                                <i class="fas fa-phone"></i>
-                            </button>
                         </div>
                     </div>
 

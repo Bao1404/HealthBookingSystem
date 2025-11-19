@@ -1,0 +1,28 @@
+﻿@model List<AppointmentDTO>
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@if (Model.Any())
+{
+    @foreach (var appointment in Model)
+    {
+        <div class="appointment-item">
+            <div class="appointment-time">
+                <span class="time">@appointment.AppointmentDateTime.ToString("HH:mm")</span>
+                <span class="date">@appointment.AppointmentDateTime.ToString("MMM dd")</span>
+            </div>
+            <div class="appointment-info">
+                <h6>@appointment.PatientUser.User.FullName</h6>
+                <p>@(string.IsNullOrEmpty(appointment.Notes) ? "General Consultation" : appointment.Notes)</p>
+                <span class="status-badge status-@appointment.Status.ToLower()">@appointment.Status</span>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="empty-state">
+        <i class="fas fa-calendar-day"></i>
+        <p>No appointments scheduled for this week</p>
+    </div>
+}

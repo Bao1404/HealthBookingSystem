@@ -28,5 +28,23 @@ namespace HealthBookingSystemAPI.Controllers
             var patients = _patientService.GetNewPatientsAsync(id);
             return Ok(patients);
         }
+        [HttpGet("doctor/{id}/search")]
+        [EnableQuery]
+        public IActionResult SearchPatients(int id, [FromQuery] string searchTerm)
+        {
+            var patients = _patientService.SearchPatientsAsync(id, searchTerm);
+            return Ok(patients);
+        }
+        [HttpGet("{id}")]
+        [EnableQuery(MaxExpansionDepth = 5)]
+        public async Task<IActionResult> GetPatientById(int id)
+        {
+            var patient = _patientService.GetPatientById(id);
+            if (patient == null)
+            {
+                return NotFound();
+            }
+            return Ok(patient);
+        }
     }
 }

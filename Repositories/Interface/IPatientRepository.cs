@@ -18,7 +18,7 @@ namespace Repositories.Interface
         IEnumerable<Patient> GetPatientsByDoctorAsync(int doctorId);
         Task<Patient?> GetPatientWithDetailsAsync(int userId);
         Task<List<Patient>> GetPatientsByDoctorAndStatusAsync(int doctorId, string status);
-        Task<List<Patient>> SearchPatientsAsync(int doctorId, string searchTerm);
+        IEnumerable<Patient> SearchPatientsAsync(int doctorId, string searchTerm);
         Task<List<Patient>> GetCriticalPatientsAsync(int doctorId);
         Task<List<Patient>> GetFollowUpPatientsAsync(int doctorId);
         IEnumerable<Patient> GetNewPatientsAsync(int doctorId, int daysThreshold = 30);
