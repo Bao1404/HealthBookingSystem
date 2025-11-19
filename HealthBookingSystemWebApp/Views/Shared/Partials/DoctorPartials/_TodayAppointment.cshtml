@@ -2,9 +2,9 @@
 @*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
-@if (ViewBag.TodayAppointments != null)
+@if (Model.Any())
 {
-    @foreach (var appointment in (List<AppointmentDTO>)ViewBag.TodayAppointments)
+    @foreach (var appointment in Model)
     {
         <div class="appointment-item-detailed">
             <div class="appointment-header">
@@ -15,7 +15,18 @@
                 <div class="appointment-time">
                     <i class="fas fa-clock"></i>
                     <span>@appointment.AppointmentDateTime.ToString("HH:mm")</span>
-                    <span class="badge bg-@(appointment.Status == "Confirmed" ? "success" : "primary") ms-2">@appointment.Status</span>
+                    @if (@appointment.Status == "Completed")
+                    {
+                        <span class="badge bg-success ms-2">@appointment.Status</span>
+                    }
+                    @if (@appointment.Status == "Cancelled")
+                    {
+                        <span class="badge bg-danger ms-2">@appointment.Status</span>
+                    }
+                    @if (@appointment.Status == "Upcoming")
+                    {
+                        <span class="badge bg-primary ms-2">@appointment.Status</span>
+                    }
                 </div>
             </div>
             <div class="appointment-details">
@@ -23,15 +34,26 @@
                 <p><strong>Notes:</strong> @(appointment.Notes ?? "No additional notes")</p>
             </div>
             <div class="appointment-actions">
-                @if (appointment.Status == "Confirmed")
-                {
-                    <button class="btn btn-primary btn-sm" onclick="showCompleteModal(@appointment.AppointmentId)">
-                        <i class="fas fa-check-circle"></i> Mark Complete
-                    </button>
-                }
-                <a asp-action="AppointmentDetails" asp-route-id="@appointment.AppointmentId" class="btn btn-info btn-sm">
+                <a asp-action="AppointmentDetails" asp-route-id="@appointment.AppointmentId" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-eye"></i> Details
                 </a>
+                @if (appointment.Status == "Upcoming")
+                {
+                    <form class="appointmentUpdateStatusForm">
+                        <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
+                        <input type="hidden" name="status" value="Completed" />
+                        <button type="submit" class="btn btn-sm btn-outline-success">
+                            <i class="fa-solid fa-check"></i> Mark as Complete
+                        </button>
+                    </form>
+                    <form class="appointmentUpdateStatusForm">
+                        <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
+                        <input type="hidden" name="status" value="Cancelled" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="fa-solid fa-ban"></i> Cancel
+                        </button>
+                    </form>
+                }
             </div>
         </div>
     }

@@ -13,10 +13,6 @@
             <input type="text" class="search-input" placeholder="Search appointments..." id="searchInput">
         </div> *@
         <div class="header-actions">
-            <button class="notification-btn">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">5</span>
-            </button>
             <a class="user-profile" asp-controller="Doctor" asp-action="Profile" style="text-decoration: none;">
                 <img src="@ViewBag.Doctor.User.AvatarUrl" alt="Doctor" class="user-avatar">
                 <div class="user-info">
@@ -51,21 +47,6 @@
 
                     <!-- View Options -->
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <div style="display: flex; border-radius: 8px; overflow: hidden; border: 2px solid #6c757d;">
-                            <button type="button" onclick="setCalendarView('month')"
-                                    style="padding: 10px 20px; font-size: 14px; font-weight: 500; border: none; background: #6c757d; color: white; cursor: pointer;">
-                                Month
-                            </button>
-                            <button type="button" onclick="setCalendarView('week')"
-                                    style="padding: 10px 20px; font-size: 14px; font-weight: 500; border: none; background: white; color: #6c757d; cursor: pointer;">
-                                Week
-                            </button>
-                            <button type="button" onclick="setCalendarView('day')"
-                                    style="padding: 10px 20px; font-size: 14px; font-weight: 500; border: none; background: white; color: #6c757d; cursor: pointer;">
-                                Day
-                            </button>
-                        </div>
-
                         <a href="@Url.Action("Calendar")"
                            style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #17a2b8; color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">
                             📅 Today

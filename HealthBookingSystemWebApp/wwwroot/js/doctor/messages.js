@@ -171,7 +171,6 @@ async function loadConversations() {
                             <h6 class="conversation-name">${conversation.patientUser?.fullName || 'Patient'}</h6>
                             <span class="conversation-time">${new Date(conversation.updatedAt).toLocaleTimeString()}</span>
                         </div>
-                        <p class="conversation-specialty">ID: ${conversation.patientUser?.userId}</p>
                         <p class="conversation-preview">Click to view messages</p>
                     </div>
                 </div>

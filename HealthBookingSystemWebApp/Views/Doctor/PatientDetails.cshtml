@@ -14,10 +14,6 @@
                 <i class="fas fa-arrow-left"></i>
                 Back to Patients
             </a>
-            <button class="notification-btn">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">5</span>
-            </button>
             <a class="user-profile" asp-controller="Doctor" asp-action="Profile" style="text-decoration: none;">
                 <img src="@(ViewBag.Doctor?.User?.AvatarUrl ?? "/placeholder.svg?height=32&width=32")" alt="Doctor" class="user-avatar">
                 <div class="user-info">
@@ -40,7 +36,6 @@
                     <h2 class="patient-name">@Model.Patient.FullName</h2>
                     <p class="patient-email">@Model.Patient.Email</p>
                     <div class="patient-badges">
-                        <span class="badge badge-@Model.Patient.StatusColor">@Model.Patient.PatientStatus</span>
                         @if (!string.IsNullOrEmpty(Model.Patient.BloodType))
                         {
                             <span class="badge badge-info">@Model.Patient.BloodType</span>
@@ -69,7 +64,7 @@
             <!-- Left Column -->
             <div class="left-column">
                 <!-- Personal Information -->
-                <div class="dashboard-card">
+                <div class="dashboard-card mb-2">
                     <div class="card-header">
                         <h5 class="card-title">
                             <i class="fas fa-user-circle"></i>
@@ -133,17 +128,6 @@
                                 <span class="info-value">@(Model.Patient.Bmi?.ToString("F1") ?? "N/A")</span>
                             </div>
                         </div>
-
-                        @if (!string.IsNullOrEmpty(Model.Patient.Allergies))
-                        {
-                            <div class="allergies-section">
-                                <h6 class="section-title">Allergies</h6>
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    @Model.Patient.Allergies
-                                </div>
-                            </div>
-                        }
                     </div>
                 </div>
             </div>
@@ -151,7 +135,7 @@
             <!-- Right Column -->
             <div class="right-column">
                 <!-- Appointment History -->
-                <div class="dashboard-card">
+                <div class="dashboard-card mb-2">
                     <div class="card-header">
                         <h5 class="card-title">
                             <i class="fas fa-calendar-alt"></i>
@@ -257,7 +241,7 @@
     }
 
     .patient-info-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
         border-radius: 16px;
         padding: 30px;
         margin-bottom: 30px;
@@ -420,6 +404,10 @@
         background: #dc3545;
     }
 
+    .timeline-upcoming{
+        background: #cce5ff;
+    }
+
     .timeline-content {
         flex: 1;
         background: #f8f9fa;
@@ -465,7 +453,7 @@
         gap: 20px;
         align-items: center;
         padding: 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
         border-radius: 12px;
         color: white;
     }
@@ -501,11 +489,13 @@
         font-size: 18px;
         font-weight: 600;
         margin: 0 0 4px 0;
+        color: black !important;
     }
 
     .appointment-status {
         margin: 0;
         opacity: 0.8;
+        color: black !important
     }
 
     .no-appointments {
@@ -599,8 +589,7 @@
     {
         return status?.ToLower() switch
         {
-            "pending" => "warning",
-            "confirmed" => "primary",
+            "upcoming" => "primary",
             "completed" => "success",
             "cancelled" => "danger",
             _ => "secondary"

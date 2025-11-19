@@ -18,10 +18,6 @@
             </form>
         </div>
         <div class="header-actions">    
-            <button class="notification-btn">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">5</span>
-            </button>
             <a class="user-profile" asp-controller="Doctor" asp-action="Profile" style="text-decoration: none;">
                 <img src="@(ViewBag.Doctor?.User?.AvatarUrl ?? "/placeholder.svg?height=32&width=32")" alt="Doctor" class="user-avatar">
                 <div class="user-info">
@@ -35,7 +31,7 @@
     <!-- Content -->
     <div class="content">
         <!-- Patient Filters -->
-        <div class="dashboard-card">
+        @* <div class="dashboard-card">
             <div class="card-content">
                 <div class="patient-filters">
                     <a href="@Url.Action("Patients", new { filter = "all" })" 
@@ -60,13 +56,13 @@
                     </a>
                 </div>
             </div>
-        </div>
+        </div> *@
 
         <!-- Patients Grid -->
         <div class="patients-grid" id="patientsGrid">
-            @if (Model.FilteredPatients.Any())
+            @if (Model.Patients.Any())
             {
-                @foreach (var patient in Model.FilteredPatients)
+                @foreach (var patient in Model.Patients)
                 {
                     <div class="patient-card">
                         <div class="patient-header">
@@ -77,7 +73,6 @@
                                 <div class="patient-details">
                                     <h5 class="patient-name">@patient.FullName</h5>
                                     <p class="patient-email">@patient.Email</p>
-                                    <span class="badge badge-@patient.StatusColor">@patient.PatientStatus</span>
                                 </div>
                             </div>
                             <div class="patient-actions">
@@ -129,15 +124,6 @@
                                 <div class="stat-label">Next Visit</div>
                             </div>
                         </div>
-
-                        @if (!string.IsNullOrEmpty(patient.Allergies))
-                        {
-                            <div class="patient-alerts">
-                                <div class="alert alert-warning">
-                                    <strong>Allergies:</strong> @patient.Allergies
-                                </div>
-                            </div>
-                        }
 
                         <div class="patient-footer">
                             <small class="text-muted">Patient since: @patient.CreatedAtDisplay</small>
@@ -216,7 +202,7 @@
         width: 50px;
         height: 50px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
         display: flex;
         align-items: center;
         justify-content: center;
