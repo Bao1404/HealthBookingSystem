@@ -42,6 +42,10 @@ namespace HealthBookingSystem.Controllers
                     {
                         return RedirectToAction("Index", "Doctor");
                     }
+                    else if(result.Role.Equals("Admin"))
+                    {
+                        return RedirectToAction("Index", "Admin");
+                    }
                 }
             }
             return View();
