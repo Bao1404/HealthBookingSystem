@@ -16,8 +16,8 @@ namespace Services.Service
         {
             _specialtyRepository = specialtyRepository;
         }
-        public async Task<List<Specialty>> GetAllSpecialtiesAsync() => 
-            await _specialtyRepository.GetAllSpecialtiesAsync();
+        public IEnumerable<Specialty> GetAllSpecialtiesAsync() => 
+            _specialtyRepository.GetAllSpecialtiesAsync();
         public async Task<Specialty> GetSpecialtyByName(string name) => 
             await _specialtyRepository.GetSpecialtyByName(name);
     }

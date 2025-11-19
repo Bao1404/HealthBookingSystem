@@ -15,7 +15,15 @@ namespace Repositories.Repositories
             _context = context;
         }
         public IEnumerable<Patient> GetAll() => _context.Patients.ToList();
-        public Patient GetById(int id) => _context.Patients.Include(p => p.User).FirstOrDefault( p=> p.UserId == id);
+        public Patient GetById(int id) => _context.Patients
+            .Include(p => p.User)
+            .Include(p => p.Appointments)
+                .ThenInclude(a => a.DoctorUser)
+                    .ThenInclude(d => d.User)
+            .Include(p => p.Appointments)
+                .ThenInclude(a => a.MedicalRecords)
+            .Include(p => p.MedicalHistories)
+            .FirstOrDefault( p=> p.UserId == id);
         public void Add(Patient patient)
         {
             _context.Patients.Add(patient);
@@ -71,17 +79,10 @@ namespace Repositories.Repositories
                 .OrderBy(p => p.User.FullName);
         }
 
-        public async Task<Patient?> GetPatientWithDetailsAsync(int userId)
+        public async Task<Patient> GetPatientWithDetailsAsync(int userId)
         {
-            return await _context.Patients
-                .Include(p => p.User)
-                .Include(p => p.Appointments)
-                    .ThenInclude(a => a.DoctorUser)
-                        .ThenInclude(d => d.User)
-                .Include(p => p.Appointments)
-                    .ThenInclude(a => a.MedicalRecords)
-                .Include(p => p.MedicalHistories)
-                .FirstOrDefaultAsync(p => p.UserId == userId);
+            return _context.Patients
+                .Find(userId);
         }
 
         public async Task<List<Patient>> GetPatientsByDoctorAndStatusAsync(int doctorId, string status)
@@ -96,10 +97,10 @@ namespace Repositories.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Patient>> SearchPatientsAsync(int doctorId, string searchTerm)
+        public IEnumerable<Patient> SearchPatientsAsync(int doctorId, string searchTerm)
         {
             var lowerSearchTerm = searchTerm.ToLower();
-            return await _context.Patients
+            return _context.Patients
                 .Include(p => p.User)
                 .Include(p => p.Appointments)
                     .ThenInclude(a => a.DoctorUser)
@@ -108,8 +109,7 @@ namespace Repositories.Repositories
                             p.User.Email.ToLower().Contains(lowerSearchTerm) ||
                             (p.User.PhoneNumber != null && p.User.PhoneNumber.Contains(searchTerm))))
                 .Distinct()
-                .OrderBy(p => p.User.FullName)
-                .ToListAsync();
+                .OrderBy(p => p.User.FullName);
         }
 
         public async Task<List<Patient>> GetCriticalPatientsAsync(int doctorId)

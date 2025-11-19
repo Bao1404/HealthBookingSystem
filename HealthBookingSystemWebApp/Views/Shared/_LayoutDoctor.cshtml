@@ -9,6 +9,7 @@
     <title>@ViewData["Title"] - HealthCareSystem</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <!-- Add jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -78,14 +79,58 @@
 
     @RenderBody()
 
+
+    @{
+        var msg = TempData["Message"] as string;
+        var type = TempData["Type"] as string; // success | error | warning | info
+    }
+
+    @if (!string.IsNullOrEmpty(msg))
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                showNotification("@msg", "@type");
+            });
+        </script>
+    }
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <script src="~/js/doctor/appointmentRealtime.js"></script>
     <script>
+                $(document).on('submit', '.appointmentUpdateStatusForm', function (e) {
+            e.preventDefault(); // chặn reload trang
+
+            $.ajax({
+                url: '/appointment/status',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (data) {
+                    // Reload tab Upcoming
+                    $('#upcomingAppointments').html(data);
+                },
+                error: function () {
+                    alert('Error loading appointment data.');
+                }
+            });
+        });
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 window.location.href = '/Auth/Logout';
             }
+        }
+        function showNotification(message, type = "info") {
+            const notification = document.createElement("div")
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`
+            notification.style.cssText = "top: 20px; right: 20px; z-index: 9999;"
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `
+            document.body.appendChild(notification)
+
+            setTimeout(() => {
+                notification.remove()
+            }, 3000)
         }
     </script>
 

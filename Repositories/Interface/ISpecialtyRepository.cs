@@ -9,7 +9,7 @@ namespace Repositories.Interface
 {
     public interface ISpecialtyRepository
     {
-        Task<List<Specialty>> GetAllSpecialtiesAsync();
+        IEnumerable<Specialty> GetAllSpecialtiesAsync();
         Task<Specialty> GetSpecialtyByName(string name);
     }
 }
