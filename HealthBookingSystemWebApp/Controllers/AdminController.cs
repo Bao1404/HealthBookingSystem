@@ -71,7 +71,7 @@ namespace HealthCareSystem.Controllers
             if (!response.IsSuccessStatusCode)
                 return BadRequest("API Error: " + response.StatusCode);
 
-            var patients = await response.Content.ReadFromJsonAsync<Patient>();
+            var patients = await response.Content.ReadFromJsonAsync<List<User>>();
             return View(patients);
         }
 
