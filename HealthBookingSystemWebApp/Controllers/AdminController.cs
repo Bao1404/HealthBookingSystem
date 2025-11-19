@@ -1,21 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Services.Interface;
-using HealthCareSystem.Controllers.dto;
+﻿using Azure;
 using BusinessObject.Models;
+using HealthBookingSystemWebApp.DTOs;
+using HealthCareSystem.Controllers.dto;
+using Microsoft.AspNetCore.Mvc;
+using Services.Interface;
+using Services.Service;
 using System.Security.Cryptography;
 using System.Text;
+using static Google.Apis.Requests.BatchRequest;
 
 namespace HealthCareSystem.Controllers
 {
     public class AdminController : Controller
     {
-        private readonly IUserService _userService;
-        private readonly IAppointmentService _appointmentService;
 
-        public AdminController(IUserService userService, IAppointmentService appointmentService)
+        private readonly HttpClient _client;
+
+        public AdminController(IHttpClientFactory httpClientFactory)
         {
-            _userService = userService;
-            _appointmentService = appointmentService;
+            _client = httpClientFactory.CreateClient("APIClient");
         }
 
         public IActionResult Index()
@@ -29,138 +32,12 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var allUsers = await _userService.GetAllUsers();
-                
-                // Patient statistics
-                var patients = allUsers.Where(u => u.Role == "patient").ToList();
-                var totalPatients = patients.Count;
-                var activePatients = patients.Count(p => p.IsActive == true);
-                var newPatientsThisMonth = patients.Count(p => p.CreatedAt >= DateTime.Now.AddDays(-30));
-                var newPatientsThisWeek = patients.Count(p => p.CreatedAt >= DateTime.Now.AddDays(-7));
-                
-                // Real appointment data from database
-                var allAppointments = await _appointmentService.GetAllAppointmentsAsync();
-                var totalAppointments = allAppointments.Count;
-                var confirmedAppointments = allAppointments.Count(a => a.Status == "Confirmed");
-                var pendingAppointments = allAppointments.Count(a => a.Status == "Pending");
-                var newAppointmentsThisMonth = allAppointments.Count(a => a.CreatedAt >= DateTime.Now.AddDays(-30));
-                var newAppointmentsThisWeek = allAppointments.Count(a => a.CreatedAt >= DateTime.Now.AddDays(-7));
+                var response = await _client.GetAsync("Admin/GetDashboardStatistics");
 
-                var appointmentTrends = new List<object>();
-                for (int i = 11; i >= 0; i--)
-                {
-                    var monthStart = DateTime.Now.AddMonths(-i).Date.AddDays(1 - DateTime.Now.AddMonths(-i).Day);
-                    var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-                    var count = allAppointments.Count(a =>
-                        a.CreatedAt >= monthStart &&
-                        a.CreatedAt <= monthEnd);
-                    appointmentTrends.Add(new
-                    {
-                        month = monthStart.ToString("MMM"),
-                        count = count
-                    });
-                }
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
 
-                // Daily appointment trends (last 7 days)
-                var dailyAppointmentTrends = new List<object>();
-                for (int i = 6; i >= 0; i--)
-                {
-                    var day = DateTime.Now.AddDays(-i).Date;
-                    var count = allAppointments.Count(a => a.CreatedAt?.Date == day);
-                    dailyAppointmentTrends.Add(new
-                    {
-                        day = day.ToString("ddd"),
-                        date = day.ToString("MMM dd"),
-                        count = count
-                    });
-                }
-
-                // Weekly appointment trends (last 12 weeks)
-                var weeklyAppointmentTrends = new List<object>();
-                for (int i = 11; i >= 0; i--)
-                {
-                    var weekStart = DateTime.Now.AddDays(-(i * 7)).Date;
-                    var weekEnd = weekStart.AddDays(6);
-                    var count = allAppointments.Count(a => a.CreatedAt >= weekStart && a.CreatedAt <= weekEnd);
-                    weeklyAppointmentTrends.Add(new { 
-                        week = $"Week {12-i}", 
-                        period = $"{weekStart:MMM dd} - {weekEnd:MMM dd}",
-                        count = count 
-                    });
-                }
-
-                // Patient age distribution (mock data for now)
-                var ageDistribution = new List<object>
-                {
-                    new { age = "18-25", count = 25 },
-                    new { age = "26-35", count = 35 },
-                    new { age = "36-45", count = 28 },
-                    new { age = "46-55", count = 20 },
-                    new { age = "56-65", count = 15 },
-                    new { age = "65+", count = 12 }
-                };
-
-                // Patient status distribution
-                var statusDistribution = new List<object>
-                {
-                    new { status = "Active", count = activePatients, color = "#10b981" },
-                    new { status = "Inactive", count = totalPatients - activePatients, color = "#6b7280" }
-                };
-
-                // Recent patient registrations
-                var recentPatients = patients
-                    .OrderByDescending(p => p.CreatedAt)
-                    .Take(5)
-                    .Select(p => new { 
-                        name = p.FullName, 
-                        email = p.Email, 
-                        registeredAt = p.CreatedAt?.ToString("MMM dd, yyyy"),
-                        status = p.IsActive == true ? "Active" : "Inactive"
-                    })
-                    .ToList();
-
-                // Appointment overview data (using real data from database)
-                var appointmentOverviewData = new List<object>();
-                for (int i = 11; i >= 0; i--)
-                {
-                    var monthStart = DateTime.Now.AddMonths(-i).Date.AddDays(1 - DateTime.Now.AddMonths(-i).Day);
-                    var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-                    var confirmedCount = allAppointments.Count(a => 
-                        a.Status == "Confirmed" && 
-                        a.CreatedAt >= monthStart && 
-                        a.CreatedAt <= monthEnd);
-                    var pendingCount = allAppointments.Count(a => 
-                        a.Status == "Pending" && 
-                        a.CreatedAt >= monthStart && 
-                        a.CreatedAt <= monthEnd);
-                    
-                    appointmentOverviewData.Add(new
-                    {
-                        month = monthStart.ToString("MMM"),
-                        confirmed = confirmedCount,
-                        pending = pendingCount
-                    });
-                }
-
-                var statistics = new
-                {
-                    totalPatients = totalPatients,
-                    activePatients = activePatients,
-                    newPatientsThisMonth = newPatientsThisMonth,
-                    newPatientsThisWeek = newPatientsThisWeek,
-                    totalAppointments = totalAppointments,
-                    confirmedAppointments = confirmedAppointments,
-                    pendingAppointments = pendingAppointments,
-                    newAppointmentsThisMonth = newAppointmentsThisMonth,
-                    newAppointmentsThisWeek = newAppointmentsThisWeek,
-                    appointmentTrends = appointmentTrends,
-                    dailyAppointmentTrends = dailyAppointmentTrends,
-                    weeklyAppointmentTrends = weeklyAppointmentTrends,
-                    appointmentOverviewData = appointmentOverviewData,
-                    ageDistribution = ageDistribution,
-                    statusDistribution = statusDistribution,
-                    recentPatients = recentPatients
-                };
+                var statistics = await response.Content.ReadFromJsonAsync<object>();
 
                 return Json(statistics);
             }
@@ -178,15 +55,23 @@ namespace HealthCareSystem.Controllers
 
         public async Task<IActionResult> ManageDoctors()
         {
-            var users = await _userService.GetAllUsers();
-            var doctors = users.Where(u => u.Role != null && u.Role.ToLower() == "doctor").ToList();
+            var response = await _client.GetAsync("Admin/ManageDoctors");
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest("API Error: " + response.StatusCode);
+
+            var doctors = await response.Content.ReadFromJsonAsync<Doctor>();
             return View(doctors);
         }
 
         public async Task<IActionResult> ManagePatients()
         {
-            var users = await _userService.GetAllUsers();
-            var patients = users.Where(u => u.Role != null && u.Role.ToLower() == "patient").ToList();
+            var response = await _client.GetAsync("Admin/ManagePatients");
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest("API Error: " + response.StatusCode);
+
+            var patients = await response.Content.ReadFromJsonAsync<Patient>();
             return View(patients);
         }
 
@@ -196,11 +81,12 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var user = await _userService.GetUserById(id);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
+                var response = await _client.GetAsync($"User/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 return View(user);
             }
             catch (Exception ex)
@@ -214,11 +100,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var user = await _userService.GetUserById(id);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
+                var response = await _client.GetAsync($"User/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
                 return View(user);
             }
             catch (Exception ex)
@@ -232,11 +120,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var user = await _userService.GetUserById(id);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
+                var response = await _client.GetAsync($"User/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
                 return View(user);
             }
             catch (Exception ex)
@@ -250,11 +140,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var user = await _userService.GetUserById(id);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
+                var response = await _client.GetAsync($"User/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
                 return View(user);
             }
             catch (Exception ex)
@@ -268,13 +160,18 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
+                var response = await _client.GetAsync($"User/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
                 if (!ModelState.IsValid)
                 {
-                    var user = await _userService.GetUserById(id);
+                    var user = await response.Content.ReadFromJsonAsync<User>();
                     return View("DoctorEdit", user);
                 }
 
-                var existingUser = await _userService.GetUserById(id);
+                var existingUser = await response.Content.ReadFromJsonAsync<User>();
                 if (existingUser == null)
                 {
                     return NotFound("User not found");
@@ -282,7 +179,8 @@ namespace HealthCareSystem.Controllers
 
                 if (existingUser.Email != updateUserDto.Email)
                 {
-                    var emailExists = await _userService.CheckUserExist(updateUserDto.Email);
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
+                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
                     if (emailExists != null)
                     {
                         ModelState.AddModelError("Email", "Email already exists");
@@ -296,8 +194,8 @@ namespace HealthCareSystem.Controllers
                 existingUser.Role = updateUserDto.Role;
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
-
-                await _userService.UpdateUser(existingUser);
+                var content = JsonContent.Create(existingUser);
+                await _client.PutAsync("User", content);
 
                 TempData["SuccessMessage"] = "Doctor updated successfully!";
                 return RedirectToAction("DoctorDetail", new { id = id });
@@ -305,7 +203,8 @@ namespace HealthCareSystem.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 return View("DoctorEdit", user);
             }
         }
@@ -316,13 +215,17 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
                 if (!ModelState.IsValid)
                 {
-                    var user = await _userService.GetUserById(id);
+                    var user = await response.Content.ReadFromJsonAsync<User>();
                     return View("PatientEdit", user);
                 }
 
-                var existingUser = await _userService.GetUserById(id);
+                var existingUser = await response.Content.ReadFromJsonAsync<User>();
                 if (existingUser == null)
                 {
                     return NotFound("User not found");
@@ -330,7 +233,8 @@ namespace HealthCareSystem.Controllers
 
                 if (existingUser.Email != updateUserDto.Email)
                 {
-                    var emailExists = await _userService.CheckUserExist(updateUserDto.Email);
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
+                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
                     if (emailExists != null)
                     {
                         ModelState.AddModelError("Email", "Email already exists");
@@ -345,7 +249,8 @@ namespace HealthCareSystem.Controllers
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
 
-                await _userService.UpdateUser(existingUser);
+                var content = JsonContent.Create(existingUser);
+                await _client.PutAsync("User", content);
 
                 TempData["SuccessMessage"] = "Patient updated successfully!";
                 return RedirectToAction("PatientDetail", new { id = id });
@@ -353,7 +258,8 @@ namespace HealthCareSystem.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 return View("PatientEdit", user);
             }
         }
@@ -363,7 +269,11 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -380,7 +290,11 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -399,13 +313,17 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
                 if (!ModelState.IsValid)
                 {
-                    var user = await _userService.GetUserById(id);
+                    var user = await response.Content.ReadFromJsonAsync<User>();
                     return View(user);
                 }
 
-                var existingUser = await _userService.GetUserById(id);
+                var existingUser = await response.Content.ReadFromJsonAsync<User>();
                 if (existingUser == null)
                 {
                     return NotFound("User not found");
@@ -414,7 +332,8 @@ namespace HealthCareSystem.Controllers
                 // Check if email is being changed and if it already exists
                 if (existingUser.Email != updateUserDto.Email)
                 {
-                    var emailExists = await _userService.CheckUserExist(updateUserDto.Email);
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
+                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
                     if (emailExists != null)
                     {
                         ModelState.AddModelError("Email", "Email already exists");
@@ -429,7 +348,8 @@ namespace HealthCareSystem.Controllers
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
 
-                await _userService.UpdateUser(existingUser);
+                var content = JsonContent.Create(existingUser);
+                await _client.PutAsync("User", content);
 
                 TempData["SuccessMessage"] = "User updated successfully!";
                 return RedirectToAction("UserDetail", new { id = id });
@@ -437,7 +357,8 @@ namespace HealthCareSystem.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 return View(user);
             }
         }
@@ -447,7 +368,11 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -465,7 +390,11 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -482,7 +411,11 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -500,13 +433,17 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
 
-                await _userService.DeleteUser(id);
+                await _client.DeleteAsync($"User/{id}");
 
                 TempData["SuccessMessage"] = "User deleted successfully!";
                 return RedirectToAction("Users");
@@ -523,13 +460,18 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
 
-                await _userService.DeleteUser(id);
+                await _client.DeleteAsync($"User/{id}");
 
                 TempData["SuccessMessage"] = "Doctor deleted successfully!";
                 return RedirectToAction("ManageDoctors");
@@ -537,7 +479,8 @@ namespace HealthCareSystem.Controllers
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 return View("DoctorDelete", user);
             }
         }
@@ -547,13 +490,18 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
 
-                await _userService.DeleteUser(id);
+                await _client.DeleteAsync($"User/{id}");
 
                 TempData["SuccessMessage"] = "Patient deleted successfully!";
                 return RedirectToAction("ManagePatients");
@@ -561,7 +509,8 @@ namespace HealthCareSystem.Controllers
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                var user = await _userService.GetUserById(id);
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 return View("PatientDelete", user);
             }
         }
@@ -590,7 +539,12 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var allUsers = await _userService.GetAllUsers();
+                var response = await _client.GetAsync("User/GetAllUsers");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var allUsers = await response.Content.ReadFromJsonAsync<List<User>>();
+
                 var filteredUsers = allUsers.AsQueryable();
 
                 // Apply search filter
@@ -624,7 +578,7 @@ namespace HealthCareSystem.Controllers
 
                 //var userDtos = paginatedUsers.Select(MapToUserDto).ToList();
 
-                var response = new UserListResponseDto
+                var responses = new UserListResponseDto
                 {
                     //Users = userDtos,
                     TotalCount = totalCount,
@@ -633,7 +587,7 @@ namespace HealthCareSystem.Controllers
                     TotalPages = totalPages
                 };
 
-                return Json(response);
+                return Json(responses);
             }
             catch (Exception ex)
             {
@@ -651,8 +605,10 @@ namespace HealthCareSystem.Controllers
                     return BadRequest(ModelState);
                 }
 
+                var responseExist = await _client.GetAsync($"User/CheckUserExist?email={createUserDto.Email}");
+
                 // Check if user already exists
-                var existingUser = await _userService.CheckUserExist(createUserDto.Email);
+                var existingUser = await responseExist.Content.ReadFromJsonAsync<User>();
                 if (existingUser != null)
                 {
                     return BadRequest(new { error = "User with this email already exists" });
@@ -696,7 +652,11 @@ namespace HealthCareSystem.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var existingUser = await _userService.GetUserById(updateUserDto.UserId);
+                var response = await _client.GetAsync($"User/{updateUserDto.UserId}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var existingUser = await response.Content.ReadFromJsonAsync<User>();
                 if (existingUser == null)
                 {
                     return NotFound(new { error = "User not found" });
@@ -705,7 +665,9 @@ namespace HealthCareSystem.Controllers
                 // Check if email is being changed and if it already exists
                 if (existingUser.Email != updateUserDto.Email)
                 {
-                    var emailExists = await _userService.CheckUserExist(updateUserDto.Email);
+
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
+                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
                     if (emailExists != null)
                     {
                         return BadRequest(new { error = "Email already exists" });
@@ -719,7 +681,7 @@ namespace HealthCareSystem.Controllers
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
 
-                await _userService.UpdateUser(existingUser);
+                await _client.PutAsync("User", JsonContent.Create(existingUser));
 
                 return Ok(new { message = "User updated successfully" });
             }
@@ -734,13 +696,17 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var user = await _userService.GetUserById(userId);
+                var response = await _client.GetAsync($"User/{userId}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound(new { error = "User not found" });
                 }
 
-                await _userService.DeleteUser(userId);
+                await _client.DeleteAsync($"User/{userId}");
 
                 return Ok(new { message = "User deleted successfully" });
             }
@@ -765,13 +731,13 @@ namespace HealthCareSystem.Controllers
                 switch (bulkActionDto.Action.ToLower())
                 {
                     case "activate":
-                        success = await _userService.BulkUpdateUserStatus(bulkActionDto.UserIds, true);
+                        success = (await _client.PostAsJsonAsync( "User/BulkUpdateUserStatus", new { UserIds = bulkActionDto.UserIds, IsActive = true })).IsSuccessStatusCode;
                         break;
                     case "deactivate":
-                        success = await _userService.BulkUpdateUserStatus(bulkActionDto.UserIds, false);
+                        success = (await _client.PostAsJsonAsync( "User/BulkUpdateUserStatus", new { UserIds = bulkActionDto.UserIds, IsActive = false })).IsSuccessStatusCode;
                         break;
                     case "delete":
-                        success = await _userService.BulkDeleteUsers(bulkActionDto.UserIds);
+                        success = (await _client.PostAsJsonAsync( "User/BulkDeleteUsers", new { UserIds = bulkActionDto.UserIds })).IsSuccessStatusCode;
                         break;
                     default:
                         return BadRequest(new { error = "Invalid action" });
@@ -838,7 +804,8 @@ namespace HealthCareSystem.Controllers
 
                 foreach (var user in testUsers)
                 {
-                    var existingUser = await _userService.CheckUserExist(user.Email);
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={user.Email}");
+                    var existingUser = await responseExist.Content.ReadFromJsonAsync<User>();
                     if (existingUser == null)
                     {
                         //await _userService.CreateUser(user);
@@ -858,7 +825,9 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var allUsers = await _userService.GetAllUsers();
+                var response = await _client.GetAsync("User/GetAllUsers");
+
+                var allUsers = await response.Content.ReadFromJsonAsync<List<User>>();
                 var userRoles = allUsers.Select(u => new { u.UserId, u.FullName, u.Email, u.Role, u.IsActive }).ToList();
                 var roleCounts = allUsers.GroupBy(u => u.Role).Select(g => new { Role = g.Key, Count = g.Count() }).ToList();
                 
@@ -880,7 +849,7 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var success = await _userService.UpdateUserStatus(userId, isActive);
+                var success = (await _client.PostAsJsonAsync("User/UpdateUserStatus", new { UserIds = userId , IsActive = isActive })).IsSuccessStatusCode;
                 if (success)
                 {
                     return Ok(new { message = "User status updated successfully" });
