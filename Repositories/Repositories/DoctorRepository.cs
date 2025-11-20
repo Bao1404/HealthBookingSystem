@@ -13,7 +13,7 @@ namespace Repositories.Repositories
         {
             _context = context;
         }
-        public IEnumerable<Doctor> GetAll() => _context.Doctors;
+        public IEnumerable<Doctor> GetAll() => _context.Doctors.ToList();
         public Doctor GetById(int id) => _context.Doctors.Find(id);
         public void Add(Doctor doctor)
         {
@@ -53,13 +53,12 @@ namespace Repositories.Repositories
                                          .ToListAsync();
         }
 
-        public async Task<List<Doctor>> GetBySpecialtyAsync(int specialtyId)
+        public IEnumerable<Doctor> GetBySpecialtyAsync(int specialtyId)
         {
-            return await _context.Doctors
+            return _context.Doctors
                 .Include(d => d.User)
                 .Include(d => d.Specialty)
-                .Where(d => d.SpecialtyId == specialtyId)
-                .ToListAsync();
+                .Where(d => d.SpecialtyId == specialtyId);
         }
 
         public async Task UpdateImageUrlDoctor(string url, int userId)

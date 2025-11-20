@@ -1,4 +1,4 @@
-﻿@model UserDTO
+@model UserDTO
 @{
     Layout = "_LayoutAdmin";
     ViewData["Title"] = "User Details";
@@ -10,24 +10,24 @@
     <header class="header">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h1 class="header-title">Patient Details</h1>
+                <h1 class="header-title">User Details</h1>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="ManagePatients">Patient Management</a></li>
+                        <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Users">User Management</a></li>
                         <li class="breadcrumb-item active" aria-current="page">@Model.FullName</li>
                     </ol>
                 </nav>
             </div>
             <div class="header-actions">
-                <a asp-controller="Admin" asp-action="PatientEdit" asp-route-id="@Model.UserId" class="btn btn-primary">
+                <a asp-controller="Admin" asp-action="UserEdit" asp-route-id="@Model.UserId" class="btn btn-primary">
                     <i class="fas fa-edit"></i>
-                    Edit Patient
+                    Edit User
                 </a>
                 <a asp-controller="Admin" asp-action="UserDelete" asp-route-id="@Model.UserId" class="btn btn-danger">
                     <i class="fas fa-trash"></i>
-                    Delete Patient
+                    Delete User
                 </a>
-                <a asp-controller="Admin" asp-action="ManagePatients" class="btn btn-secondary">
+                <a asp-controller="Admin" asp-action="Users" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i>
                     Back to List
                 </a>
@@ -56,13 +56,13 @@
         <!-- User Profile Card -->
         <div class="dashboard-card">
             <div class="card-header">
-                <h5 class="card-title">Patient Profile</h5>
+                <h5 class="card-title">User Profile</h5>
             </div>
             <div class="card-content">
                 <div class="row">
                     <div class="col-md-3 text-center">
                         <div class="user-avatar-large mb-3">
-                            <img src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "/placeholder.svg?height=120&width=120" : Model.AvatarUrl)"
+                            <img src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "/placeholder.svg?height=120&width=120" : Model.AvatarUrl)" 
                                  alt="@Model.FullName" class="rounded-circle" width="120" height="120">
                         </div>
                         <div class="user-status">
@@ -95,7 +95,7 @@
                                             var roleBadgeClass = Model.Role?.ToLower() switch
                                             {
                                                 "admin" => "danger",
-                                                "doctor" => "primary",
+                                                "doctor" => "primary", 
                                                 "staff" => "warning",
                                                 "patient" => "success",
                                                 _ => "secondary"
@@ -159,14 +159,14 @@
                             {
                                 <button class="btn btn-warning" onclick="updateUserStatus(@Model.UserId, false)">
                                     <i class="fas fa-pause"></i>
-                                    Deactivate Doctor
+                                    Deactivate User
                                 </button>
                             }
                             else
                             {
                                 <button class="btn btn-success" onclick="updateUserStatus(@Model.UserId, true)">
                                     <i class="fas fa-play"></i>
-                                    Activate Doctor
+                                    Activate User
                                 </button>
                             }
                             <button class="btn btn-info" onclick="resetPassword(@Model.UserId)">
@@ -212,65 +212,65 @@
 </div>
 
 <script>
-    function updateUserStatus(userId, isActive) {
-        if (!confirm(`Are you sure you want to ${isActive ? 'activate' : 'deactivate'} this user?`)) {
-            return;
+function updateUserStatus(userId, isActive) {
+    if (!confirm(`Are you sure you want to ${isActive ? 'activate' : 'deactivate'} this user?`)) {
+        return;
+    }
+
+    fetch(`/Admin/UpdateUserStatus?userId=${userId}&isActive=${isActive}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
         }
-
-        fetch(`/Admin/UpdateUserStatus?userId=${userId}&isActive=${isActive}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message) {
-                showAlert('success', data.message);
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-            } else {
-                showAlert('danger', data.error || 'Failed to update user status');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('danger', 'An error occurred while updating user status');
-        });
-    }
-
-    function resetPassword(userId) {
-        if (!confirm('Are you sure you want to reset this user\'s password?')) {
-            return;
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            showAlert('success', data.message);
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showAlert('danger', data.error || 'Failed to update user status');
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while updating user status');
+    });
+}
 
-        // This would typically open a modal or redirect to a password reset page
-        alert('Password reset functionality would be implemented here');
+function resetPassword(userId) {
+    if (!confirm('Are you sure you want to reset this user\'s password?')) {
+        return;
     }
+    
+    // This would typically open a modal or redirect to a password reset page
+    alert('Password reset functionality would be implemented here');
+}
 
-    function sendWelcomeEmail(userId) {
-        if (!confirm('Send welcome email to this user?')) {
-            return;
-        }
-
-        // This would typically make an API call to send the email
-        alert('Welcome email functionality would be implemented here');
+function sendWelcomeEmail(userId) {
+    if (!confirm('Send welcome email to this user?')) {
+        return;
     }
+    
+    // This would typically make an API call to send the email
+    alert('Welcome email functionality would be implemented here');
+}
 
-    function showAlert(type, message) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-
-        const container = document.querySelector('.content');
-        container.insertBefore(alertDiv, container.firstChild);
-
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 5000);
-    }
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.content');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
 </script> 

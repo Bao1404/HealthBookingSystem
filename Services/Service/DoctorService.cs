@@ -26,8 +26,8 @@ namespace Services.Service
         }
         public async Task<List<Doctor>> GetDoctorsAsync() => 
             await _doctorRepository.GetDoctorsAsync();
-        public async Task<List<Doctor>> GetBySpecialtyAsync(int specialtyId) => 
-            await _doctorRepository.GetBySpecialtyAsync(specialtyId);
+        public  IEnumerable<Doctor> GetBySpecialtyAsync(int specialtyId) => 
+             _doctorRepository.GetBySpecialtyAsync(specialtyId);
         public async Task UpdateImageUrlDoctor(string url, int userId)
         {
              await _doctorRepository.UpdateImageUrlDoctor(url, userId);

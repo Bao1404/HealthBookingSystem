@@ -225,10 +225,10 @@ namespace Repositories.Repositories
                 .OrderBy(a => a.AppointmentDateTime)
                 .ToListAsync();
         }
-        public IEnumerable<Appointment> GetAppointmentsByUserId(int userId)
+        public IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId)
         {
             return _context.Appointments
-                .Where(a => a.DoctorUserId == userId || a.PatientUserId == userId)
+                .Where(a => a.DoctorUserId == doctorId)
                 .OrderBy(a => a.AppointmentDateTime);
         } 
     }

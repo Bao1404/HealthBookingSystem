@@ -159,6 +159,7 @@
                                                 <span class="badge badge-@GetStatusColor(appointment.Status)">@appointment.Status</span>
                                             </div>
                                             <div class="timeline-details">
+                                                <p class="appointment-type">@appointment.AppointmentType</p>
                                                 @if (!string.IsNullOrEmpty(appointment.Notes))
                                                 {
                                                     <p class="appointment-notes">@appointment.Notes</p>
