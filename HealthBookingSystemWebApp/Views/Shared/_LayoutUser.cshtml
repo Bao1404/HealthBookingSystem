@@ -32,12 +32,6 @@
                 </div>
                 <span class="sidebar-text">Appointments</span>
             </a>
-            <a asp-controller="User" asp-action="Calendar" class="sidebar-item @(ViewData["ActiveMenu"] == "Calendar" ? "active" : "")">
-                <div class="sidebar-icon">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <span class="sidebar-text">Calendar</span>
-            </a>
             <a asp-controller="User" asp-action="Doctors" class="sidebar-item @(ViewData["ActiveMenu"] == "Doctors" ? "active" : "")">
                 <div class="sidebar-icon">
                     <i class="fas fa-user-md"></i>

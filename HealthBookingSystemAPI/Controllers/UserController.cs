@@ -6,7 +6,7 @@ using Services.Interface;
 
 namespace HealthBookingSystemAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/Users")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -36,8 +36,8 @@ namespace HealthBookingSystemAPI.Controllers
             return Ok(user);
         }
 
-        [HttpGet("CheckUserExist")]
-        public async Task<IActionResult> CheckUserExist(string email)
+        [HttpGet("check-exist")]
+        public async Task<IActionResult> CheckUserExist([FromQuery] string email)
         {
             var users = await _userService.CheckUserExist(email);
             return Ok(users);

@@ -236,7 +236,7 @@ namespace HealthBookingSystem.Controllers
                 TotalAppointments = doctorAppointments.Count,
                 CompletedAppointments = doctorAppointments.Count(a => a.Status == "Completed"),
                 CreatedAt = patient.CreatedAt,
-                CreatedAtDisplay = patient.CreatedAt?.ToString("MMM dd, yyyy") ?? "N/A",
+                CreatedAtDisplay = patient.CreatedAt.ToString("MMM dd, yyyy") ?? "N/A",
                 RecentAppointments = doctorAppointments.TakeLast(3).Select(a => new RecentAppointment
                 {
                     AppointmentId = a.AppointmentId,
@@ -263,7 +263,6 @@ namespace HealthBookingSystem.Controllers
                 AppointmentDateTime = a.AppointmentDateTime,
                 Status = a.Status ?? "Unknown",
                 Notes = a.Notes ?? "",
-                AppointmentType = GetAppointmentType(a.Notes),
                 DoctorNotes = a.Notes ?? "",
                 CreatedAt = a.CreatedAt
             }).ToList();
@@ -275,7 +274,7 @@ namespace HealthBookingSystem.Controllers
                 CancelledAppointments = doctorAppointments.Count(a => a.Status == "Cancelled"),
                 FirstAppointment = doctorAppointments.LastOrDefault()?.AppointmentDateTime,
                 LastAppointment = doctorAppointments.FirstOrDefault()?.AppointmentDateTime,
-                PatientSince = patient.CreatedAt?.ToString("MMMM yyyy") ?? "Unknown"
+                PatientSince = patient.CreatedAt.ToString("MMMM yyyy") ?? "Unknown"
             };
 
             return new PatientDetailsViewModel
@@ -363,18 +362,25 @@ namespace HealthBookingSystem.Controllers
         }
         public async Task<IActionResult> AppointmentDetails(int id)
         {
+            if (currentUser == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            if(currentRole == "Patient")
+            {
+                return RedirectToAction("Index", "User");
+            }
             var appointment = await GetAppointmentById(id);
             if (appointment == null)
             {
                 return NotFound();
             }
 
-            var doctorId = HttpContext.Session.GetInt32("UserId") ?? 1;
-            if (appointment.DoctorUserId != doctorId)
+            if (appointment.DoctorUserId != currentUser.Value)
             {
                 return Forbid();
             }
-
+            ViewBag.Doctor = await GetDoctorsById(currentUser.Value);
             return View(appointment);
         }
         [HttpPost]
@@ -721,7 +727,7 @@ namespace HealthBookingSystem.Controllers
         }
         private async Task<List<AppointmentDTO>> GetUpcomingAppointment(int doctorId)
         {
-            var request = await _httpClient.GetAsync($"Appointments/doctor/{doctorId}?&$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&$filter=Status eq 'Upcoming'&$orderby=AppointmentDateTime asc");
+            var request = await _httpClient.GetAsync($"Appointments/user/{doctorId}?&$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&$filter=Status eq 'Upcoming'&$orderby=AppointmentDateTime asc");
             if (request.IsSuccessStatusCode)
             {
                 var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
@@ -733,7 +739,7 @@ namespace HealthBookingSystem.Controllers
         {
             var today = DateTime.Today.ToString("yyyy-MM-dd");
             var filter = $"date(AppointmentDateTime) eq {today}&$orderby=AppointmentDateTime asc";
-            var request = await _httpClient.GetAsync($"Appointments/doctor/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&filter={filter}");
+            var request = await _httpClient.GetAsync($"Appointments/user/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&filter={filter}");
             if (request.IsSuccessStatusCode)
             {
                 var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
@@ -744,7 +750,7 @@ namespace HealthBookingSystem.Controllers
         private async Task<List<AppointmentDTO>> GetCompletedAppointmentsByDoctor(int doctorId)
         {
             var filter = $"Status eq 'Completed'&$orderby=AppointmentDateTime asc";
-            var request = await _httpClient.GetAsync($"Appointments/doctor/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&filter={filter}");
+            var request = await _httpClient.GetAsync($"Appointments/user/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&filter={filter}");
             if (request.IsSuccessStatusCode)
             {
                 var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
@@ -755,7 +761,7 @@ namespace HealthBookingSystem.Controllers
         private async Task<List<AppointmentDTO>> GetCancelledAppointmentsByDoctor(int doctorId)
         {
             var filter = $"Status eq 'Cancelled'&$orderby=AppointmentDateTime asc";
-            var request = await _httpClient.GetAsync($"Appointments/doctor/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&filter={filter}");
+            var request = await _httpClient.GetAsync($"Appointments/user/{doctorId}?$expand=DoctorUser,MedicalRecords,PatientUser($expand=User)&filter={filter}");
             if (request.IsSuccessStatusCode)
             {
                 var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
@@ -853,7 +859,7 @@ namespace HealthBookingSystem.Controllers
                     Type = "appointment",
                     Title = "New Appointment Request",
                     Message = $"{appointment.PatientUser?.User?.FullName} requests appointment on {appointment.AppointmentDateTime:MMM dd, HH:mm}",
-                    CreatedAt = appointment.CreatedAt ?? DateTime.Now,
+                    CreatedAt = appointment.CreatedAt,
                     IsRead = false,
                     Icon = "fas fa-calendar-plus",
                     Color = "primary"

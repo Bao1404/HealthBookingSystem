@@ -9,7 +9,7 @@ namespace Services.Interface
 {
     public interface IAppointmentService
     {
-        Task<List<Appointment>> GetAllAppointmentsAsync();
+        IEnumerable<Appointment> GetAllAppointments();
         Task<Appointment?> GetAppointmentsByIdAsync(int id);
         Task AddAppointmentAsync(Appointment appointment);
         Task UpdateAppointmentAsync(Appointment appointment);
@@ -25,7 +25,7 @@ namespace Services.Interface
         Task<List<Appointment>> GetCompletedAppointmentsByDoctorAsync(int doctorId);
         Task<List<Appointment>> GetCancelledAppointmentsByDoctorAsync(int doctorId);
         Task<List<Appointment>> GetAppointmentsByDoctorAndStatusAsync(int doctorId, string status);
-        IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId);
+        IEnumerable<Appointment> GetAppointmentsByUserId(int userId);
         Task<bool> ApproveAppointmentAsync(int appointmentId, int doctorId);
         Task<bool> RejectAppointmentAsync(int appointmentId, int doctorId, string? reason = null);
         IEnumerable<Appointment> GetAppointmentsByWeekAsync(int doctorId);

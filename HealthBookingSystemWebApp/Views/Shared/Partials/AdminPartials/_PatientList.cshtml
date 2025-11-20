@@ -1,0 +1,37 @@
+﻿
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model List<PatientDTO>
+@if (Model.Any())
+{
+    foreach (var patient in Model)
+    {
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <img src="@patient.User.AvatarUrl" alt="@patient.User.FullName" class="rounded-circle me-2" width="40" height="40">
+                    <div>
+                        <div class="fw-bold">@patient.User.FullName</div>
+                        <small class="text-muted">@patient.User.Email</small>
+                    </div>
+                </div>
+            </td>
+            <td>@patient.User.PhoneNumber</td>
+            <td>@patient.Address</td>
+            <td>@patient.CreatedAt.ToString("dd/MM/yyyy")</td>
+            <td>
+                <div class="btn-group" role="group">
+                    <a asp-controller="Admin" asp-action="PatientDetail" asp-route-id="@patient.UserId" class="btn btn-sm btn-outline-primary" title="View">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
+            </td>
+        </tr>
+    }
+}
+else{
+    <tr>
+        <td colspan="6" class="text-center text-muted">No patients found.</td>
+    </tr>
+}

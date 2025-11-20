@@ -23,7 +23,7 @@ namespace Repositories.Repositories
             .Include(p => p.Appointments)
                 .ThenInclude(a => a.MedicalRecords)
             .Include(p => p.MedicalHistories)
-            .FirstOrDefault( p=> p.UserId == id);
+            .FirstOrDefault(p => p.UserId == id);
         public void Add(Patient patient)
         {
             _context.Patients.Add(patient);

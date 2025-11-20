@@ -1,6 +1,7 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+@model PatientDTO
 @{
     Layout = "_LayoutUser";
     ViewData["Title"] = "Profile";
@@ -10,15 +11,7 @@
     <!-- Header -->
     <header class="header">
         <h1 class="header-title">My Profile</h1>
-        @* <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Search..." id="searchInput">
-        </div> *@
         <div class="header-actions">
-            <button class="notification-btn">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
-            </button>
             <a asp-controller="User" asp-action="Profile" style="text-decoration: none;">
                 <div class="user-profile">
                     <img src="@Model.User.AvatarUrl" alt="User" class="user-avatar">
@@ -344,7 +337,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="editDOB" class="form-label">Date of Birth</label>
-                            <input type="date" class="form-control" id="" name="dob" value="@Model.DateOfBirth.ToString("yyyy-MM-dd")">
+                            <input type="date" class="form-control" id="" name="dob" value="@Model.DateOfBirth">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="editGender" class="form-label">Gender</label>

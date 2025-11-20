@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace HealthBookingSystemAPI.DTOs
+﻿namespace HealthBookingSystemWebApp.DTOs
 {
-    public class RegisterPatientDTO
+    public class RegisterDTO
     {
         public string FullName { get; set; }
         public string Email { get; set; }
@@ -16,15 +14,5 @@ namespace HealthBookingSystemAPI.DTOs
         public int Weight { get; set; }
         public int Height { get; set; }
         public decimal Bmi { get; set; }
-    }
-    public class RegisterDoctorDTO
-    {
-        public string? FullName { get; set; }
-        public string? Email { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? Password { get; set; }
-        public string? Experience { get; set; }
-        public string? Bio { get; set; }
-        public int SpecialtyId { get; set; }
     }
 }

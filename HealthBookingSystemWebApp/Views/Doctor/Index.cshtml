@@ -745,6 +745,28 @@
 
             <!-- Right Sidebar -->
             <div class="calendar-sidebar-widget">
+                <!-- This Week Summary -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">This Week</h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="week-stats">
+                            <div class="week-stat-item">
+                                <div class="week-stat-number">@Model.WeeklyStats.WeeklyAppointmentCount</div>
+                                <div class="week-stat-label">Appointments</div>
+                            </div>
+                            <div class="week-stat-item">
+                                <div class="week-stat-number">@Model.WeeklyStats.WeeklyNewPatientCount</div>
+                                <div class="week-stat-label">New Patients</div>
+                            </div>
+                            <div class="week-stat-item">
+                                <div class="week-stat-number">@Model.WeeklyStats.WeeklyFollowUpCount</div>
+                                <div class="week-stat-label">Follow-ups</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- Quick Actions -->
                 <div class="dashboard-card">
                     <div class="card-header">
@@ -788,29 +810,6 @@
                                     <p>Manage availability</p>
                                 </div>
                             </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- This Week Summary -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h5 class="card-title">This Week</h5>
-                    </div>
-                    <div class="card-content">
-                        <div class="week-stats">
-                            <div class="week-stat-item">
-                                <div class="week-stat-number">@Model.WeeklyStats.WeeklyAppointmentCount</div>
-                                <div class="week-stat-label">Appointments</div>
-                            </div>
-                            <div class="week-stat-item">
-                                <div class="week-stat-number">@Model.WeeklyStats.WeeklyNewPatientCount</div>
-                                <div class="week-stat-label">New Patients</div>
-                            </div>
-                            <div class="week-stat-item">
-                                <div class="week-stat-number">@Model.WeeklyStats.WeeklyFollowUpCount</div>
-                                <div class="week-stat-label">Follow-ups</div>
-                            </div>
                         </div>
                     </div>
                 </div>

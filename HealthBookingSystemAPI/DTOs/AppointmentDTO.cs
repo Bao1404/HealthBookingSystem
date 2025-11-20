@@ -5,7 +5,13 @@
         public int AppointmentId { get; set; }
         public string Status { get; set; }
     }
-
+    public class AddAppointmentDTO
+    {
+        public int PatientUserId { get; set; }
+        public int DoctorUserId { get; set; }
+        public DateTime AppointmentDateTime { get; set; }
+        public string? Notes { get; set; }
+    }
     public class AppointmentDTO
     {
         public int AppointmentId { get; set; }

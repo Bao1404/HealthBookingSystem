@@ -18,8 +18,6 @@ namespace HealthBookingSystem.Models
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
         [Required]
-        public string Role { get; set; }
-        [Required]
         public DateOnly Dob { get; set; }
         [Required]
         public string Gender { get; set; }
@@ -32,6 +30,5 @@ namespace HealthBookingSystem.Models
         [Required]
         public int Height { get; set; }
         public decimal Bmi { get; set; }
-        public string? Allergies { get; set; }
     }
 }

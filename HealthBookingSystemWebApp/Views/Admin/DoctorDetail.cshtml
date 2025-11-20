@@ -1,4 +1,4 @@
-﻿@model UserDTO
+﻿
 @{
     Layout = "_LayoutAdmin";
     ViewData["Title"] = "User Details";
@@ -14,7 +14,7 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="ManageDoctors">Doctor Management</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">@Model.FullName</li>
+                        <li class="breadcrumb-item active" aria-current="page">@Model.User.FullName</li>
                     </ol>
                 </nav>
             </div>
@@ -62,12 +62,12 @@
                 <div class="row">
                     <div class="col-md-3 text-center">
                         <div class="user-avatar-large mb-3">
-                            <img src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "/placeholder.svg?height=120&width=120" : Model.AvatarUrl)"
-                                 alt="@Model.FullName" class="rounded-circle" width="120" height="120">
+                            <img src="@(string.IsNullOrEmpty(Model.User.AvatarUrl) ? "/placeholder.svg?height=120&width=120" : Model.User.AvatarUrl)"
+                                 alt="@Model.User.FullName" class="rounded-circle" width="120" height="120">
                         </div>
                         <div class="user-status">
-                            <span class="badge bg-@(Model.IsActive == true ? "success" : "secondary") fs-6">
-                                @(Model.IsActive == true ? "Active" : "Inactive")
+                            <span class="badge bg-@(Model.User.IsActive == true ? "success" : "secondary") fs-6">
+                                @(Model.User.IsActive == true ? "Active" : "Inactive")
                             </span>
                         </div>
                     </div>
@@ -76,15 +76,15 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Full Name</label>
-                                    <p class="form-control-plaintext">@Model.FullName</p>
+                                    <p class="form-control-plaintext">@Model.User.FullName</p>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Email</label>
-                                    <p class="form-control-plaintext">@Model.Email</p>
+                                    <p class="form-control-plaintext">@Model.User.Email</p>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Phone Number</label>
-                                    <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not provided" : Model.PhoneNumber)</p>
+                                    <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.User.PhoneNumber) ? "Not provided" : Model.User.PhoneNumber)</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -92,7 +92,7 @@
                                     <label class="form-label fw-bold">Role</label>
                                     <p class="form-control-plaintext">
                                         @{
-                                            var roleBadgeClass = Model.Role?.ToLower() switch
+                                            var roleBadgeClass = Model.User.Role?.ToLower() switch
                                             {
                                                 "admin" => "danger",
                                                 "doctor" => "primary",
@@ -101,7 +101,7 @@
                                                 _ => "secondary"
                                             };
                                         }
-                                        <span class="badge bg-@roleBadgeClass">@Model.Role</span>
+                                        <span class="badge bg-@roleBadgeClass">@Model.User.Role</span>
                                     </p>
                                 </div>
                                 <div class="mb-3">
@@ -110,7 +110,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Avatar URL</label>
-                                    <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.AvatarUrl) ? "Default avatar" : Model.AvatarUrl)</p>
+                                    <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.User.AvatarUrl) ? "Default avatar" : Model.User.AvatarUrl)</p>
                                 </div>
                             </div>
                         </div>
@@ -155,7 +155,7 @@
                     </div>
                     <div class="card-content">
                         <div class="d-grid gap-2">
-                            @if (Model.IsActive == true)
+                            @if (Model.User.IsActive == true)
                             {
                                 <button class="btn btn-warning" onclick="updateUserStatus(@Model.UserId, false)">
                                     <i class="fas fa-pause"></i>
@@ -182,32 +182,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Related Data (if available) -->
-        @if (Model.Doctor != null || Model.Patient != null)
-        {
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h5 class="card-title">Related Information</h5>
-                </div>
-                <div class="card-content">
-                    @if (Model.Doctor != null)
-                    {
-                        <div class="alert alert-info">
-                            <h6><i class="fas fa-user-md"></i> Doctor Information</h6>
-                            <p class="mb-0">This user is registered as a doctor. Additional doctor-specific information would be displayed here.</p>
-                        </div>
-                    }
-                    @if (Model.Patient != null)
-                    {
-                        <div class="alert alert-info">
-                            <h6><i class="fas fa-user-injured"></i> Patient Information</h6>
-                            <p class="mb-0">This user is registered as a patient. Additional patient-specific information would be displayed here.</p>
-                        </div>
-                    }
-                </div>
-            </div>
-        }
     </div>
 </div>
 

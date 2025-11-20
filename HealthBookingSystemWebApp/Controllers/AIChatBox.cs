@@ -2,6 +2,7 @@
 using HealthBookingSystem.DTOs;
 using HealthBookingSystem.Mapper;
 using HealthBookingSystem.Models;
+using HealthBookingSystemWebApp.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -20,18 +21,18 @@ namespace HealthBookingSystem.Controllers
     {
         private readonly IAiConversationService _aiConversationService;
         private readonly IAiMessageService _aiMessageService;
-        private readonly IDoctorService _doctorService;
         private readonly ISpecialtyService _specialtyService;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly OpenAIOptions _option;
-        public AIChatBox(IAiConversationService aiConversationService, IAiMessageService aiMessageService, IOptions<OpenAIOptions> option, IHttpClientFactory httpClientFactory, IDoctorService doctorService, ISpecialtyService specialtyService)
+        private readonly HttpClient _httpClient;
+        public AIChatBox(IAiConversationService aiConversationService, IAiMessageService aiMessageService, IOptions<OpenAIOptions> option, IHttpClientFactory httpClientFactory, ISpecialtyService specialtyService)
         {
             _aiConversationService = aiConversationService;
             _aiMessageService = aiMessageService;
             _option = option.Value;
             _httpClientFactory = httpClientFactory;
-            _doctorService = doctorService;
             _specialtyService = specialtyService;
+            _httpClient = httpClientFactory.CreateClient("APIClient");
         }
         [HttpPost("message")]
         public async Task<IActionResult> SendMessage([FromBody] AiChatRequest request)
@@ -77,8 +78,28 @@ namespace HealthBookingSystem.Controllers
             var client = _httpClientFactory.CreateClient();
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
             var url = $"{_option.Endpoint}?key={_option.ApiKey}";
-            var resp = await client.PostAsync(url, content);
-            resp.EnsureSuccessStatusCode();  // Ensure the response is successful
+            var reqMsg = new HttpRequestMessage(HttpMethod.Post, url);
+            reqMsg.Content = content;
+
+            var resp = await SendWithRetry(client, reqMsg);
+
+            if (resp.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                return StatusCode(429, new
+                {
+                    aiReply = "Hệ thống AI đang quá tải. Vui lòng thử lại sau vài giây.",
+                    recommendedDoctors = new List<object>()
+                });
+            }
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                return StatusCode((int)resp.StatusCode, new
+                {
+                    aiReply = "AI hiện không thể trả lời. Vui lòng thử lại.",
+                    recommendedDoctors = new List<object>()
+                });
+            }
 
             using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
 
@@ -127,7 +148,7 @@ namespace HealthBookingSystem.Controllers
                     aiReply
                 });
             }
-            var docs = await _doctorService.GetBySpecialtyAsync(getSpecialty.SpecialtyId);
+            var docs = await GetBySpecialty(getSpecialty.SpecialtyId);
             var recommendedDoctors = docs.Select(d => new
             {
                 UserId = d.UserId,
@@ -146,7 +167,16 @@ namespace HealthBookingSystem.Controllers
                 recommendedDoctors
             });
         }
-
+        private async Task<List<DoctorDTO>> GetBySpecialty(int id)
+        {
+            var request = await _httpClient.GetAsync($"Doctors/speciality/{id}?$expand=User,Specialty");
+            if (request.IsSuccessStatusCode)
+            {
+                var doctors = await request.Content.ReadFromJsonAsync<List<DoctorDTO>>();
+                return doctors ?? new List<DoctorDTO>();
+            }
+            return new List<DoctorDTO>();
+        }
 
 
         [HttpGet("messages/{userId}")]
@@ -170,5 +200,29 @@ namespace HealthBookingSystem.Controllers
             }
             return BadRequest();
         }
+        private async Task<HttpResponseMessage> SendWithRetry(HttpClient client, HttpRequestMessage request)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                var response = await client.SendAsync(request);
+
+                if (response.StatusCode != System.Net.HttpStatusCode.TooManyRequests)
+                    return response; // thành công -> trả về luôn
+
+                // Nếu API trả về 429, kiểm tra xem có header Retry-After không
+                if (response.Headers.TryGetValues("Retry-After", out var values))
+                {
+                    int seconds = int.Parse(values.First());
+                    await Task.Delay(seconds * 1000);
+                }
+                else
+                {
+                    await Task.Delay(2000); // Retry sau 2 giây
+                }
+            }
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.TooManyRequests);
+        }
+
     }
 }

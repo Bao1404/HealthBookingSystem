@@ -76,7 +76,7 @@
                     <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
                         <div class="appointments-list">
                             @{
-                                var upcomingAppointments = ViewBag.UpcomingAppointments as List<HealthBookingSystem.Models.AppointmentViewModel>;
+                                var upcomingAppointments = ViewBag.UpcomingAppointments as List<AppointmentDTO>;
                             }
                             @if (upcomingAppointments != null && upcomingAppointments.Any())
                             {
@@ -85,10 +85,10 @@
                                     <div class="appointment-card">
                                         <div class="appointment-header">
                                             <div class="appointment-doctor">
-                                                <img src="@(string.IsNullOrEmpty(appointment.DoctorAvatarUrl) ? "/images/default-doctor.png" : appointment.DoctorAvatarUrl)" alt="Doctor" class="doctor-avatar-small">
+                                                <img src="@(string.IsNullOrEmpty(appointment.DoctorUser.User.AvatarUrl) ? "/images/default-doctor.png" : appointment.DoctorUser.User.AvatarUrl)" alt="Doctor" class="doctor-avatar-small">
                                                 <div class="doctor-info">
-                                                    <h6>@appointment.DoctorName</h6>
-                                                    <p>@appointment.SpecialtyName</p>
+                                                    <h6>@appointment.DoctorUser.User.FullName</h6>
+                                                    <p>@appointment.DoctorUser.Specialty.Name</p>
                                                 </div>
                                             </div>
                                             <div class="appointment-status">

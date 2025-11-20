@@ -13,16 +13,9 @@ namespace Repositories.Repositories
             _context = context;
         }
 
-        public async Task<List<Appointment>> GetAllAppointmentsAsync()
+        public IEnumerable<Appointment> GetAllAppointments()
         {
-            return await _context.Appointments
-                .Include(a => a.DoctorUser)
-                    .ThenInclude(d => d.User)           // Include Doctor.User
-                .Include(a => a.DoctorUser)
-                    .ThenInclude(d => d.Specialty)      // Include Doctor.Specialty
-                .Include(a => a.PatientUser)
-                    .ThenInclude(p => p.User)           // Include Patient.User
-                .ToListAsync();
+            return _context.Appointments;
         }
 
         public async Task<Appointment?> GetAppointmentsByIdAsync(int id)
@@ -225,10 +218,10 @@ namespace Repositories.Repositories
                 .OrderBy(a => a.AppointmentDateTime)
                 .ToListAsync();
         }
-        public IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId)
+        public IEnumerable<Appointment> GetAppointmentsByUserId(int userId)
         {
             return _context.Appointments
-                .Where(a => a.DoctorUserId == doctorId)
+                .Where(a => a.DoctorUserId == userId || a.PatientUserId == userId)
                 .OrderBy(a => a.AppointmentDateTime);
         } 
     }

@@ -20,14 +20,14 @@ namespace HealthBookingSystemAPI.Controllers
         [EnableQuery]
         public async Task<IActionResult> GetAppointments()
         {
-            var appointments = _appointmentService.GetAllAppointmentsAsync();
+            var appointments = _appointmentService.GetAllAppointments();
             return Ok(appointments);
         }
-        [HttpGet("doctor/{id}")]
+        [HttpGet("user/{id}")]
         [EnableQuery]
-        public async Task<IActionResult> GetAppointmentsByDoctorId(int id)
+        public async Task<IActionResult> GetAppointmentsByUserId(int id)
         {
-            var appointments = _appointmentService.GetAppointmentsByDoctorId(id);
+            var appointments = _appointmentService.GetAppointmentsByUserId(id);
             return Ok(appointments);
         }
         [HttpGet("week/{id}")]
@@ -67,7 +67,22 @@ namespace HealthBookingSystemAPI.Controllers
             await _appointmentService.UpdateAppointmentAsync(appointment);
             return NoContent();
         }
-
+        [HttpPost]
+        public async Task<IActionResult> CreateAppointment([FromBody] AddAppointmentDTO appointmentDTO)
+        {
+            var appointment = new Appointment
+            {
+                PatientUserId = appointmentDTO.PatientUserId,
+                DoctorUserId = appointmentDTO.DoctorUserId,
+                Notes = appointmentDTO.Notes,
+                Status = "Upcoming",
+                AppointmentDateTime = appointmentDTO.AppointmentDateTime,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+            await _appointmentService.AddAppointmentAsync(appointment);
+            return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.AppointmentId }, appointment);
+        }
         [HttpPost("GetUpcomingAppointments")]
         public async Task<IActionResult> GetUpcomingAppointments([FromBody] List<AppointmentDTO> appointments)
         {

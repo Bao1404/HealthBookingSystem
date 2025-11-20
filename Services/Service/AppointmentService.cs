@@ -18,7 +18,7 @@ namespace Services.Service
         {
             _appointmentRepository = appointmentRepository;
         }
-        public async Task<List<Appointment>> GetAllAppointmentsAsync() => await _appointmentRepository.GetAllAppointmentsAsync();
+        public IEnumerable<Appointment> GetAllAppointments() => _appointmentRepository.GetAllAppointments();
         public async Task<Appointment?> GetAppointmentsByIdAsync(int id) => await _appointmentRepository.GetAppointmentsByIdAsync(id);
         public async Task UpdateAppointmentAsync(Appointment appointment) => await _appointmentRepository.UpdateAppointmentAsync(appointment);
         public async Task DeleteAppointmentAsync(int id) => await _appointmentRepository.DeleteAppointmentAsync(id);
@@ -55,7 +55,7 @@ namespace Services.Service
             _appointmentRepository.GetAppointmentsByMonthAsync(doctorId);
         public async Task<List<Appointment>> GetAppointmentsByDateAsync(int doctorId, DateTime date) =>
             await _appointmentRepository.GetAppointmentsByDateAsync(doctorId, date);
-        public IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId) => _appointmentRepository.GetAppointmentsByDoctorId(doctorId);
+        public IEnumerable<Appointment> GetAppointmentsByUserId(int userId) => _appointmentRepository.GetAppointmentsByUserId(userId);
         public async Task<bool> ApproveAppointmentAsync(int appointmentId, int doctorId)
         {
             try

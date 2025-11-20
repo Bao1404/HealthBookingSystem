@@ -1,0 +1,123 @@
+﻿@using HealthBookingSystemWebApp.DTOs
+@model List<DoctorDTO>
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@if (Model.Any())
+{
+    foreach (var doctor in Model)
+    {
+        <div class="doctor-card" data-specialty="@doctor.Specialty.SpecialtyId">
+            <div class="doctor-card-header">
+                <div class="doctor-image-wrapper">
+                    <img src="@doctor.User.AvatarUrl" alt="@doctor.User.FullName" class="doctor-image">
+                </div>
+            </div>
+
+            <div class="doctor-card-body">
+                <h5 class="doctor-name">@doctor.User.FullName</h5>
+                <p class="doctor-specialty">
+                    <i class="fas fa-stethoscope"></i> @doctor.Specialty.Name
+                </p>
+
+                <div class="doctor-location">
+                    <i class="fa-solid fa-phone"></i>
+                    @doctor.User.PhoneNumber
+                </div>
+
+                <div class="doctor-info-row">
+                    <div class="info-item">
+                        <i class="fas fa-briefcase"></i>
+                        <span>15y exp</span>
+                    </div>
+                </div>
+                <div class="doctor-info-row">
+                    <div class="info-item">
+                        <span>@doctor.Bio</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doctor-card-footer">
+                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#doctorModal-@doctor.UserId">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="startConversation(@doctor.UserId)">
+                    <i class="fa-regular fa-message"></i> Message
+                </button>
+            </div>
+        </div>
+
+        <!-- Doctor Details Modal -->
+        <div class="modal fade" id="doctorModal-@doctor.UserId" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content modal-modern">
+                    <div class="modal-header border-bottom-0">
+                        <h5 class="modal-title">Doctor Profile</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="doctorModalBody">
+                        <!-- Populated by JavaScript -->
+                        <div class="doctor-details-modal">
+                            <!-- Header -->
+                            <div class="doctor-details-header">
+                                <img src="@doctor.User.AvatarUrl" alt="@doctor.User.FullName" class="doctor-details-image">
+                                <div class="doctor-details-info">
+                                    <h4>@doctor.User.FullName</h4>
+                                    <p class="specialty-badge">
+                                        <i class="fas fa-stethoscope"></i> @doctor.Specialty.Name
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Quick Info Grid -->
+                            <div class="quick-info-grid">
+                                <div class="info-card">
+                                    <i class="fas fa-briefcase"></i>
+                                    <div>
+                                        <span class="info-label">Experience</span>
+                                        <span class="info-value">@doctor.Experience</span>
+                                    </div>
+                                </div>
+                                <div class="info-card">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <div>
+                                        <span class="info-label">Education</span>
+                                        <span class="info-value">@doctor.Qualifications</span>
+                                    </div>
+                                </div>
+                                <div class="info-card">
+                                    <i class="fa-solid fa-phone"></i>
+                                    <div>
+                                        <span class="info-label">Contact</span>
+                                        <span class="info-value">@doctor.User.PhoneNumber</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- About Section -->
+                            <div class="about-section">
+                                <h6>About</h6>
+                                <p>@doctor.Bio</p>
+                            </div>
+
+                            <!-- Specializations -->
+                            <div class="specializations-section">
+                                <h6>Specializations</h6>
+                                <div class="specialization-tags">
+                                    <span class="spec-tag">@doctor.Specialty.Description</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="bookWithDoctor(@doctor.UserId)">
+                            <i class="fas fa-calendar-check"></i> Book Appointment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

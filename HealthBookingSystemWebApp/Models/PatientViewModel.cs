@@ -64,7 +64,7 @@ namespace HealthBookingSystem.Models
         public DateTime AppointmentDateTime { get; set; }
         public string Status { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
-        public string AppointmentType { get; set; } = string.Empty;
+        public string AppointmentDoctor { get; set; } = string.Empty;
         public string DoctorNotes { get; set; } = string.Empty;
         public DateTime? CreatedAt { get; set; }
     }

@@ -9,7 +9,7 @@ namespace Repositories.Interface
 {
     public interface IAppointmentRepository
     {
-        Task<List<Appointment>> GetAllAppointmentsAsync();
+        IEnumerable<Appointment> GetAllAppointments();
         Task<Appointment?> GetAppointmentsByIdAsync(int id);
         Task AddAppointmentAsync(Appointment appointment);
         Task UpdateAppointmentAsync(Appointment appointment);
@@ -25,7 +25,7 @@ namespace Repositories.Interface
         Task<List<Appointment>> GetCompletedAppointmentsByDoctorAsync(int doctorId);
         Task<List<Appointment>> GetCancelledAppointmentsByDoctorAsync(int doctorId);
         Task<List<Appointment>> GetAppointmentsByDoctorAndStatusAsync(int doctorId, string status);
-        IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId);
+        IEnumerable<Appointment> GetAppointmentsByUserId(int userId);
         IEnumerable<Appointment> GetAppointmentsByWeekAsync(int doctorId);
         IEnumerable<Appointment> GetAppointmentsByMonthAsync(int doctorId);
         Task<List<Appointment>> GetAppointmentsByDateAsync(int doctorId, DateTime date);

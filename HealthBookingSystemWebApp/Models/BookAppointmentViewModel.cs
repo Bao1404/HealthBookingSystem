@@ -1,5 +1,4 @@
-﻿using BusinessObject.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace HealthBookingSystem.Models
 {

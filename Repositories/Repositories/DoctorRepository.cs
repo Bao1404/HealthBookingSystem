@@ -13,7 +13,7 @@ namespace Repositories.Repositories
         {
             _context = context;
         }
-        public IEnumerable<Doctor> GetAll() => _context.Doctors.ToList();
+        public IEnumerable<Doctor> GetAll() => _context.Doctors;
         public Doctor GetById(int id) => _context.Doctors.Find(id);
         public void Add(Doctor doctor)
         {
@@ -56,8 +56,6 @@ namespace Repositories.Repositories
         public IEnumerable<Doctor> GetBySpecialtyAsync(int specialtyId)
         {
             return _context.Doctors
-                .Include(d => d.User)
-                .Include(d => d.Specialty)
                 .Where(d => d.SpecialtyId == specialtyId);
         }
 

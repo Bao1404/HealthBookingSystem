@@ -18,7 +18,7 @@ namespace HealthBookingSystemAPI.Controllers
         }
         [HttpGet]
         [EnableQuery]
-        public async Task<IActionResult> GetAllDoctors()
+        public IActionResult GetAllDoctors()
         {
             var doctors = _doctorService.GetAllDoctors();
             return Ok(doctors);
