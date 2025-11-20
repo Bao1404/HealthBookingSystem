@@ -69,35 +69,6 @@
                                     <div class="invalid-feedback">Please enter your phone number.</div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">I am a: *</label>
-                                    <div class="role-selection">
-                                        <div class="role-card" data-role="patient">
-                                            <div class="role-icon">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <h6>Patient</h6>
-                                            <p>Looking for medical care and consultations</p>
-                                            <div class="role-radio">
-                                                <input asp-for="Role" type="radio" id="rolePatient" name="role" value="Patient" required>
-                                                <label for="rolePatient"></label>
-                                            </div>
-                                        </div>
-                                        @* <div class="role-card" data-role="doctor">
-                                            <div class="role-icon">
-                                                <i class="fas fa-user-md"></i>
-                                            </div>
-                                            <h6>Doctor</h6>
-                                            <p>Medical professional providing healthcare services</p>
-                                            <div class="role-radio">
-                                                <input asp-for="Role" type="radio" id="roleDoctor" name="role" value="Doctor" required>
-                                                <label for="roleDoctor"></label>
-                                            </div>
-                                        </div> *@
-                                    </div>
-                                    <div class="invalid-feedback">Please select your role.</div>
-                                </div>
-
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="password" class="form-label">Password *</label>
@@ -112,6 +83,12 @@
                                                 <div class="strength-fill"></div>
                                             </div>
                                             <small class="strength-text">Password strength</small>
+                                            <ul id="password-requirements" class="password-req-list">
+                                                <li id="req-length" class="invalid"><i class="fas fa-circle"></i> Tối thiểu 8 ký tự</li>
+                                                <li id="req-upper" class="invalid"><i class="fas fa-circle"></i> Ít nhất 1 chữ hoa</li>
+                                                <li id="req-lower" class="invalid"><i class="fas fa-circle"></i> Ít nhất 1 chữ thường</li>
+                                                <li id="req-number" class="invalid"><i class="fas fa-circle"></i> Ít nhất 1 số hoặc ký tự đặc biệt</li>
+                                            </ul>
                                         </div>
                                         <div class="invalid-feedback">Password must be at least 8 characters long.</div>
                                     </div>
@@ -257,5 +234,39 @@
     </div>
 </div>
 
+<style>
+    .password-req-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 10px;
+        font-size: 0.85rem;
+        color: #666;
+    }
 
+        .password-req-list li {
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+            .password-req-list li i {
+                font-size: 6px; /* Icon chấm tròn nhỏ */
+            }
+
+            /* Trạng thái hợp lệ */
+            .password-req-list li.valid {
+                color: #10b981; /* Màu xanh lá */
+            }
+
+                .password-req-list li.valid i {
+                    color: #10b981;
+                }
+
+            /* Trạng thái không hợp lệ (mặc định) */
+            .password-req-list li.invalid {
+                color: #9ca3af; /* Màu xám */
+            }
+</style>
 <script src="~/js/register/register.js"></script>

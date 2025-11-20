@@ -14,7 +14,7 @@ namespace Repositories.Repositories
         {
             _context = context;
         }
-        public IEnumerable<Patient> GetAll() => _context.Patients.ToList();
+        public IEnumerable<Patient> GetAll() => _context.Patients;
         public Patient GetById(int id) => _context.Patients
             .Include(p => p.User)
             .Include(p => p.Appointments)

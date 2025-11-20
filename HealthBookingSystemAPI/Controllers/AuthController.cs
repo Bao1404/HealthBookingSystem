@@ -19,10 +19,12 @@ namespace HealthBookingSystemAPI.Controllers
     {
         private readonly IUserService _userService;
         private readonly IPatientService _patientService;
-        public AuthController(IUserService service, IPatientService patientService)
+        private readonly IDoctorService _doctorService;
+        public AuthController(IUserService service, IPatientService patientService, IDoctorService doctorService)
         {
             _userService = service;
             _patientService = patientService;
+            _doctorService = doctorService;
         }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginDTO)
@@ -65,8 +67,8 @@ namespace HealthBookingSystemAPI.Controllers
                 AccountId = accountId,
             });
         }
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDTO registerDTO)
+        [HttpPost("register-patient")]
+        public async Task<IActionResult> Register(RegisterPatientDTO registerDTO)
         {
             var existUser = await _userService.CheckUserExist(registerDTO.Email);
             if (existUser == null)
@@ -77,7 +79,7 @@ namespace HealthBookingSystemAPI.Controllers
                     Password = registerDTO.Password,
                     FullName = registerDTO.FullName,
                     PhoneNumber = registerDTO.PhoneNumber,
-                    Role = registerDTO.Role,
+                    Role = "Patient",
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     IsActive = true,
@@ -99,16 +101,47 @@ namespace HealthBookingSystemAPI.Controllers
                         Weight = registerDTO.Weight,
                         Height = registerDTO.Height,
                         Bmi = registerDTO.Bmi,
-                        Allergies = registerDTO.Allergies,
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now
                     };
-
                     _patientService.AddPatient(user.Patient);
                 }
                 return Ok();
             }
             return BadRequest();
+        }
+        [HttpPost("register-doctor")]
+        public async Task<IActionResult> RegisterDoctor(RegisterDoctorDTO registerDTO)
+        {
+            var existUser = await _userService.CheckUserExist(registerDTO.Email);
+            if (existUser == null)
+            {
+                var user = new User
+                {
+                    Email = registerDTO.Email,
+                    Password = registerDTO.Password,
+                    FullName = registerDTO.FullName,
+                    PhoneNumber = registerDTO.PhoneNumber,
+                    Role = "Doctor",
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    IsActive = true,
+                    AvatarUrl = "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg"
+                };
+                await _userService.CreateUser(user);
+                user.Doctor = new Doctor
+                {
+                    UserId = user.UserId,
+                    SpecialtyId = registerDTO.SpecialtyId,
+                    Bio = registerDTO.Bio,
+                    Experience = registerDTO.Experience,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+                _doctorService.AddDoctor(user.Doctor);
+                return Ok();
+            }
+            return BadRequest("User already exists.");
         }
     }
 }

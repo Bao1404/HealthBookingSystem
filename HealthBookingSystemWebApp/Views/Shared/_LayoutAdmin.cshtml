@@ -19,53 +19,17 @@
             <div class="sidebar-title">Admin Panel</div>
         </div>
         <nav class="sidebar-nav">
-            <a asp-controller="Admin" asp-action="Index" class="sidebar-item @(ViewData["ActiveMenu"] == "Dashboard" ? "active" : "")">
+            <a asp-controller="Admin" asp-action="ManageDoctors" class="sidebar-item @(ViewData["ActiveMenu"] == "ManageDoctors" ? "active" : "")">
                 <div class="sidebar-icon">
-                    <i class="fas fa-tachometer-alt"></i>
-                </div>
-                <span class="sidebar-text">Dashboard</span>
-            </a>
-            <a asp-controller="Admin" asp-action="Users" class="sidebar-item @(ViewData["ActiveMenu"] == "UserManagement" ? "active" : "")">
-                <div class="sidebar-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <span class="sidebar-text">User Management</span>
-            </a>
-            @* <a asp-controller="Admin" asp-action="Contents" class="sidebar-item @(ViewData["ActiveMenu"] == "ContentManagement" ? "active" : "")">
-                <div class="sidebar-icon">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                <span class="sidebar-text">Content Management</span>
-            </a>
-            <a asp-controller="Admin" asp-action="System" class="sidebar-item @(ViewData["ActiveMenu"] == "SystemManagement" ? "active" : "")">
-                <div class="sidebar-icon">
-                    <i class="fas fa-cogs"></i>
-                </div>
-                <span class="sidebar-text">System Management</span>
-            </a>
-            <a asp-controller="Admin" asp-action="Reports" class="sidebar-item @(ViewData["ActiveMenu"] == "Reports" ? "active" : "")">
-                <div class="sidebar-icon">
-                    <i class="fas fa-chart-bar"></i>
-                </div>
-                <span class="sidebar-text">Reports</span>
-            </a> *@
-            <a asp-controller="Admin" asp-action="ManageDoctors" class="sidebar-item @(ViewData["ActiveMenu"] == "Reports" ? "active" : "")">
-                <div class="sidebar-icon">
-                    <i class="fas fa-users"></i>
+                    <i class="fa-solid fa-user-doctor"></i>
                 </div>
                 <span class="sidebar-text">Doctor Management</span>
             </a>
-            <a asp-controller="Admin" asp-action="ManagePatients" class="sidebar-item @(ViewData["ActiveMenu"] == "Reports" ? "active" : "")">
+            <a asp-controller="Admin" asp-action="ManagePatients" class="sidebar-item @(ViewData["ActiveMenu"] == "ManagePatients" ? "active" : "")">
                 <div class="sidebar-icon">
                     <i class="fas fa-users"></i>
                 </div>
                 <span class="sidebar-text">Patient Management</span>
-            </a>
-            <a asp-controller="Logout" asp-action="Index" class="sidebar-item">
-                <div class="sidebar-icon">
-                    <i class="fas fa-sign-out-alt"></i>
-                </div>
-                <span class="sidebar-text">Logout</span>
             </a>
         </nav>
     </div>

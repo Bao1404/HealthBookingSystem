@@ -1,276 +1,557 @@
-﻿@model UserDTO
+﻿@model HealthBookingSystem.Models.PatientDetailsViewModel
 @{
     Layout = "_LayoutAdmin";
-    ViewData["Title"] = "User Details";
+    ViewData["Title"] = "Patient Details";
 }
 
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
     <header class="header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="header-title">Patient Details</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="ManagePatients">Patient Management</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">@Model.FullName</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="header-actions">
-                <a asp-controller="Admin" asp-action="PatientEdit" asp-route-id="@Model.UserId" class="btn btn-primary">
-                    <i class="fas fa-edit"></i>
-                    Edit Patient
-                </a>
-                <a asp-controller="Admin" asp-action="UserDelete" asp-route-id="@Model.UserId" class="btn btn-danger">
-                    <i class="fas fa-trash"></i>
-                    Delete Patient
-                </a>
-                <a asp-controller="Admin" asp-action="ManagePatients" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i>
-                    Back to List
-                </a>
-            </div>
+        <h1 class="header-title">Patient Details</h1>
+        <div class="header-actions">
+            <a href="@Url.Action("ManagePatients")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back to Patients
+            </a>
         </div>
     </header>
 
     <!-- Content -->
-    <div class="content">
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                @TempData["SuccessMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                @TempData["ErrorMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-
-        <!-- User Profile Card -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h5 class="card-title">Patient Profile</h5>
-            </div>
-            <div class="card-content">
-                <div class="row">
-                    <div class="col-md-3 text-center">
-                        <div class="user-avatar-large mb-3">
-                            <img src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "/placeholder.svg?height=120&width=120" : Model.AvatarUrl)"
-                                 alt="@Model.FullName" class="rounded-circle" width="120" height="120">
-                        </div>
-                        <div class="user-status">
-                            <span class="badge bg-@(Model.IsActive == true ? "success" : "secondary") fs-6">
-                                @(Model.IsActive == true ? "Active" : "Inactive")
-                            </span>
-                        </div>
+    <div class="content patient-details-content">
+        <!-- Patient Info Card -->
+        <div class="patient-info-card">
+            <div class="patient-header-details">
+                <div class="patient-avatar-large">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="patient-main-info">
+                    <h2 class="patient-name">@Model.Patient.FullName</h2>
+                    <p class="patient-email">@Model.Patient.Email</p>
+                    <div class="patient-badges">
+                        @if (!string.IsNullOrEmpty(Model.Patient.BloodType))
+                        {
+                            <span class="badge badge-info">@Model.Patient.BloodType</span>
+                        }
                     </div>
-                    <div class="col-md-9">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Full Name</label>
-                                    <p class="form-control-plaintext">@Model.FullName</p>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Email</label>
-                                    <p class="form-control-plaintext">@Model.Email</p>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Phone Number</label>
-                                    <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not provided" : Model.PhoneNumber)</p>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Role</label>
-                                    <p class="form-control-plaintext">
-                                        @{
-                                            var roleBadgeClass = Model.Role?.ToLower() switch
-                                            {
-                                                "admin" => "danger",
-                                                "doctor" => "primary",
-                                                "staff" => "warning",
-                                                "patient" => "success",
-                                                _ => "secondary"
-                                            };
-                                        }
-                                        <span class="badge bg-@roleBadgeClass">@Model.Role</span>
-                                    </p>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">User ID</label>
-                                    <p class="form-control-plaintext">@Model.UserId</p>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Avatar URL</label>
-                                    <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.AvatarUrl) ? "Default avatar" : Model.AvatarUrl)</p>
-                                </div>
-                            </div>
-                        </div>
+                </div>
+                <div class="patient-quick-stats">
+                    <div class="quick-stat">
+                        <div class="stat-number">@Model.Statistics.TotalAppointments</div>
+                        <div class="stat-label">Total Visits</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="stat-number">@Model.Statistics.CompletedAppointments</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div class="stat-number">@Model.Statistics.PatientSince</div>
+                        <div class="stat-label">Patient Since</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- User Activity & Timestamps -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="dashboard-card">
+        <!-- Main Content Grid -->
+        <div class="patient-details-grid">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Personal Information -->
+                <div class="dashboard-card mb-2">
                     <div class="card-header">
-                        <h5 class="card-title">Account Information</h5>
+                        <h5 class="card-title">
+                            <i class="fas fa-user-circle"></i>
+                            Personal Information
+                        </h5>
                     </div>
                     <div class="card-content">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Account Created</label>
-                            <p class="form-control-plaintext">
-                                @(Model.CreatedAt?.ToString("MMMM dd, yyyy 'at' HH:mm") ?? "Not available")
-                            </p>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Age</span>
+                                <span class="info-value">@(Model.Patient.Age?.ToString() ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Gender</span>
+                                <span class="info-value">@(Model.Patient.Gender ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Date of Birth</span>
+                                <span class="info-value">@(Model.Patient.DateOfBirth?.ToString("MMM dd, yyyy") ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Phone</span>
+                                <span class="info-value">@(Model.Patient.Phone ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Emergency Contact</span>
+                                <span class="info-value">@(Model.Patient.EmergencyPhoneNumber ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Address</span>
+                                <span class="info-value">@(Model.Patient.Address ?? "N/A")</span>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Last Updated</label>
-                            <p class="form-control-plaintext">
-                                @(Model.UpdatedAt?.ToString("MMMM dd, yyyy 'at' HH:mm") ?? "Not available")
-                            </p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Last Login</label>
-                            <p class="form-control-plaintext">
-                                @(Model.UpdatedAt?.ToString("MMMM dd, yyyy 'at' HH:mm") ?? "Never")
-                            </p>
+                    </div>
+                </div>
+
+                <!-- Medical Information -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h5 class="card-title">
+                            <i class="fas fa-heartbeat"></i>
+                            Medical Information
+                        </h5>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Blood Type</span>
+                                <span class="info-value">@(Model.Patient.BloodType ?? "N/A")</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Weight</span>
+                                <span class="info-value">@(Model.Patient.Weight?.ToString() ?? "N/A") kg</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Height</span>
+                                <span class="info-value">@(Model.Patient.Height?.ToString() ?? "N/A") cm</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">BMI</span>
+                                <span class="info-value">@(Model.Patient.Bmi?.ToString("F1") ?? "N/A")</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="dashboard-card">
+
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- Appointment History -->
+                <div class="dashboard-card mb-2">
                     <div class="card-header">
-                        <h5 class="card-title">Quick Actions</h5>
+                        <h5 class="card-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            Appointment History
+                        </h5>
                     </div>
                     <div class="card-content">
-                        <div class="d-grid gap-2">
-                            @if (Model.IsActive == true)
-                            {
-                                <button class="btn btn-warning" onclick="updateUserStatus(@Model.UserId, false)">
-                                    <i class="fas fa-pause"></i>
-                                    Deactivate Doctor
-                                </button>
-                            }
-                            else
-                            {
-                                <button class="btn btn-success" onclick="updateUserStatus(@Model.UserId, true)">
-                                    <i class="fas fa-play"></i>
-                                    Activate Doctor
-                                </button>
-                            }
-                            <button class="btn btn-info" onclick="resetPassword(@Model.UserId)">
-                                <i class="fas fa-key"></i>
-                                Reset Password
-                            </button>
-                            <button class="btn btn-secondary" onclick="sendWelcomeEmail(@Model.UserId)">
-                                <i class="fas fa-envelope"></i>
-                                Send Welcome Email
-                            </button>
-                        </div>
+                        @if (Model.AppointmentHistory.Any())
+                        {
+                            <div class="appointment-timeline">
+                                @foreach (var appointment in Model.AppointmentHistory)
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker timeline-@appointment.Status.ToLower()">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-header">
+                                                <span class="timeline-date">@appointment.AppointmentDateTime.ToString("MMM dd, yyyy")</span>
+                                                <span class="timeline-time">@appointment.AppointmentDateTime.ToString("HH:mm")</span>
+                                                <span class="badge badge-@GetStatusColor(appointment.Status)">@appointment.Status</span>
+                                            </div>
+                                            <div class="timeline-details">
+                                                <p class="appointment-type">@appointment.AppointmentDoctor</p>
+                                                @if (!string.IsNullOrEmpty(appointment.Notes))
+                                                {
+                                                    <p class="appointment-notes">@appointment.Notes</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="no-appointments">
+                                <p class="text-muted">No appointment history available.</p>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Related Data (if available) -->
-        @if (Model.Doctor != null || Model.Patient != null)
-        {
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h5 class="card-title">Related Information</h5>
-                </div>
-                <div class="card-content">
-                    @if (Model.Doctor != null)
-                    {
-                        <div class="alert alert-info">
-                            <h6><i class="fas fa-user-md"></i> Doctor Information</h6>
-                            <p class="mb-0">This user is registered as a doctor. Additional doctor-specific information would be displayed here.</p>
-                        </div>
-                    }
-                    @if (Model.Patient != null)
-                    {
-                        <div class="alert alert-info">
-                            <h6><i class="fas fa-user-injured"></i> Patient Information</h6>
-                            <p class="mb-0">This user is registered as a patient. Additional patient-specific information would be displayed here.</p>
-                        </div>
-                    }
-                </div>
-            </div>
-        }
     </div>
 </div>
 
+<!-- Success/Error Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<style>
+    .patient-details-content {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .patient-info-card {
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 30px;
+        color: white;
+    }
+
+    .patient-header-details {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .patient-avatar-large {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        color: white;
+    }
+
+    .patient-main-info {
+        flex: 1;
+    }
+
+        .patient-main-info h2 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .patient-main-info p {
+            margin: 0 0 12px 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+    .patient-badges {
+        display: flex;
+        gap: 8px;
+    }
+
+    .patient-quick-stats {
+        display: flex;
+        gap: 30px;
+    }
+
+    .quick-stat {
+        text-align: center;
+    }
+
+        .quick-stat .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .quick-stat .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+    .patient-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .info-label {
+        font-size: 12px;
+        color: #666;
+        text-transform: uppercase;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 14px;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .allergies-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .section-title {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .appointment-timeline {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 40px;
+            bottom: -20px;
+            width: 2px;
+            background: #e9ecef;
+        }
+
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .timeline-completed {
+        background: #28a745;
+    }
+
+    .timeline-confirmed {
+        background: #007bff;
+    }
+
+    .timeline-pending {
+        background: #ffc107;
+    }
+
+    .timeline-cancelled {
+        background: #dc3545;
+    }
+
+    .timeline-upcoming {
+        background: #cce5ff;
+    }
+
+    .timeline-content {
+        flex: 1;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .timeline-date {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .timeline-time {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .timeline-details {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .appointment-type {
+        font-weight: 500;
+        color: #333;
+        margin: 0 0 4px 0;
+    }
+
+    .appointment-notes {
+        margin: 0;
+        font-style: italic;
+    }
+
+    .next-appointment {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        padding: 20px;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        border-radius: 12px;
+        color: white;
+    }
+
+    .appointment-date {
+        text-align: center;
+        background: rgba(255,255,255,0.2);
+        padding: 15px;
+        border-radius: 8px;
+        min-width: 80px;
+    }
+
+        .appointment-date .day {
+            display: block;
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .appointment-date .month {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+    .appointment-info {
+        flex: 1;
+    }
+
+    .appointment-time {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        color: black !important;
+    }
+
+    .appointment-status {
+        margin: 0;
+        opacity: 0.8;
+        color: black !important
+    }
+
+    .no-appointments {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+
+    /* Badge styles */
+    .badge {
+        font-size: 11px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .badge-secondary {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .badge-primary {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    /* Responsive */
+    @@media (max-width: 1024px) {
+        .patient-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .patient-header-details {
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .patient-quick-stats {
+            justify-content: center;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .timeline-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+    }
+</style>
+
 <script>
-    function updateUserStatus(userId, isActive) {
-        if (!confirm(`Are you sure you want to ${isActive ? 'activate' : 'deactivate'} this user?`)) {
-            return;
-        }
-
-        fetch(`/Admin/UpdateUserStatus?userId=${userId}&isActive=${isActive}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message) {
-                showAlert('success', data.message);
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-            } else {
-                showAlert('danger', data.error || 'Failed to update user status');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('danger', 'An error occurred while updating user status');
-        });
+    function scheduleAppointmentForPatient(patientId) {
+        alert('Schedule appointment feature for patient ID: ' + patientId + ' - Feature coming soon!');
     }
 
-    function resetPassword(userId) {
-        if (!confirm('Are you sure you want to reset this user\'s password?')) {
-            return;
-        }
-
-        // This would typically open a modal or redirect to a password reset page
-        alert('Password reset functionality would be implemented here');
+    function loadMoreAppointments() {
+        alert('Load more appointments feature - Feature coming soon!');
     }
+</script>
 
-    function sendWelcomeEmail(userId) {
-        if (!confirm('Send welcome email to this user?')) {
-            return;
-        }
-
-        // This would typically make an API call to send the email
-        alert('Welcome email functionality would be implemented here');
+@functions {
+    string GetStatusColor(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "upcoming" => "primary",
+            "completed" => "success",
+            "cancelled" => "danger",
+            _ => "secondary"
+        };
     }
-
-    function showAlert(type, message) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-
-        const container = document.querySelector('.content');
-        container.insertBefore(alertDiv, container.firstChild);
-
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 5000);
-    }
-</script> 
+}

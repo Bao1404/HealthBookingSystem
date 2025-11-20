@@ -24,9 +24,9 @@ public class PatientDTO
 
     public string? EmergencyPhoneNumber { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
     public ICollection<AppointmentDTO> Appointments { get; set; } = new List<AppointmentDTO>();
 

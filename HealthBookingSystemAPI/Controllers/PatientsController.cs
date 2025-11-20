@@ -14,6 +14,13 @@ namespace HealthBookingSystemAPI.Controllers
         {
             _patientService = patientService;
         }
+        [HttpGet]
+        [EnableQuery]
+        public async Task<IActionResult> GetAllPatients()
+        {
+            var patients = _patientService.GetAllPatients();
+            return Ok(patients);
+        }
         [HttpGet("doctor/{id}")]
         [EnableQuery]
         public async Task<IActionResult> GetPatientsByDoctorId(int id)
