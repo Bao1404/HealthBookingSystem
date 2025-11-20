@@ -17,8 +17,8 @@ namespace HealthBookingSystemAPI.Controllers
             _userService = userService;
         }
 
-        [HttpGet("GetAllUsers")]
-        public async Task<IActionResult> GetAllUsers()
+        [HttpGet]
+        public async Task<IActionResult> GetUsers()
         {
             var users = await _userService.GetAllUsers();
             return Ok(users);

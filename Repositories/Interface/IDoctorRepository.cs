@@ -13,7 +13,7 @@ namespace Repositories.Interface
         public Task<Doctor> GetDoctorsByIdAsync(int id);
 
         Task<List<Doctor>> GetDoctorsAsync();
-        Task<List<Doctor>> GetBySpecialtyAsync(int specialtyId);
+        IEnumerable<Doctor> GetBySpecialtyAsync(int specialtyId);
         Task UpdateImageUrlDoctor(string url, int userId);
     }
 }
