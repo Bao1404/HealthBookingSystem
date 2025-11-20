@@ -3325,3 +3325,679 @@ input:checked + .slider {
     .btn-danger:hover {
         background-color: #dc2626;
     }
+
+/* Schedule Page Specific Styles */
+.schedule-grid {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.schedule-header {
+    display: grid;
+    grid-template-columns: 100px repeat(7, 1fr);
+    background-color: var(--background);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.schedule-day-header {
+    padding: 1rem;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+    .schedule-day-header:last-child {
+        border-right: none;
+    }
+
+    .schedule-day-header.today {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+.day-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.day-date {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.schedule-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.schedule-day-column {
+    border-right: 1px solid var(--border-color);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+    .schedule-day-column:last-child {
+        border-right: none;
+    }
+
+.time-slot {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .time-slot:hover {
+        background-color: var(--background);
+    }
+
+    .time-slot.available {
+        background-color: #f0fdf4;
+        border-left: 3px solid var(--success-color);
+    }
+
+    .time-slot.booked {
+        background-color: #fef3c7;
+        border-left: 3px solid var(--warning-color);
+    }
+
+    .time-slot.blocked {
+        background-color: #fee2e2;
+        border-left: 3px solid var(--danger-color);
+    }
+
+.slot-time {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.slot-status {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+}
+
+.day-off {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    font-style: italic;
+    background-color: #fafafa;
+}
+
+/* Working Hours Grid */
+.working-hours-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.working-hours-day {
+    background-color: var(--background);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+    .working-hours-day:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+.day-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+    .day-info h6 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+.day-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.hours-input {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: opacity 0.3s ease;
+}
+
+    .hours-input.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .hours-input input[type="time"] {
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 0.875rem;
+        background-color: var(--card-background);
+    }
+
+        .hours-input input[type="time"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+    .hours-input span {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+
+.closed-text {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.875rem;
+}
+
+/* Availability Settings */
+.availability-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.setting-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+    .setting-group h6 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+.duration-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+}
+
+.duration-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--background);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+    .duration-option:hover {
+        border-color: var(--primary-color);
+        background-color: #eff6ff;
+    }
+
+    .duration-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+        .duration-option input[type="radio"]:checked + span {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+    .duration-option:has(input[type="radio"]:checked) {
+        border-color: var(--primary-color);
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+        .duration-option:has(input[type="radio"]:checked) span {
+            color: white;
+        }
+
+    .duration-option span {
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+.setting-toggle {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--background);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.setting-info {
+    flex: 1;
+}
+
+    .setting-info h6 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 0.25rem 0;
+    }
+
+    .setting-info p {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+.settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Time Off Management */
+.time-off-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.time-off-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    background-color: var(--background);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+    .time-off-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+.time-off-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.time-off-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+    .time-off-icon.vacation {
+        background: linear-gradient(135deg, var(--accent-color), #0891b2);
+    }
+
+    .time-off-icon.sick {
+        background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    }
+
+    .time-off-icon.conference {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+    .time-off-icon.personal {
+        background: linear-gradient(135deg, var(--warning-color), #d97706);
+    }
+
+    .time-off-icon.holiday {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+    }
+
+.time-off-details h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.time-off-details p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0 0 0.25rem 0;
+}
+
+.time-off-details small {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.time-off-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.no-time-off {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Schedule Controls */
+.schedule-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+    .schedule-controls span {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        min-width: 200px;
+        text-align: center;
+    }
+
+/* Schedule Grid Alternative Layout */
+.schedule-grid-header {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+    background-color: var(--background);
+    border-bottom: 2px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.schedule-time-header {
+    padding: 1rem 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-right: 1px solid var(--border-color);
+    background-color: var(--background);
+}
+
+.schedule-grid-row {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.schedule-time-slot {
+    padding: 1rem 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--background);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.schedule-cell {
+    padding: 0.5rem;
+    border-right: 1px solid var(--border-color);
+    min-height: 60px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .schedule-cell:hover {
+        background-color: var(--background);
+    }
+
+    .schedule-cell.available {
+        background-color: #f0fdf4;
+    }
+
+    .schedule-cell.has-appointment {
+        background-color: #fef3c7;
+    }
+
+.available-slot {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 0.5rem;
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+    .available-slot:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background-color: #eff6ff;
+    }
+
+.appointment-block {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 6px;
+    text-align: center;
+    width: 100%;
+    font-size: 0.75rem;
+}
+
+.appointment-patient {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.appointment-type {
+    font-size: 0.65rem;
+    opacity: 0.9;
+}
+
+/* Modal Enhancements for Schedule */
+.modal-content .form-control,
+.modal-content .form-select {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    font-size: 0.875rem;
+}
+
+    .modal-content .form-control:focus,
+    .modal-content .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+.modal-content .form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.modal-content .form-check-input {
+    margin-right: 0.5rem;
+}
+
+.modal-content .form-check-label {
+    color: var(--text-primary);
+}
+
+/* Responsive Design for Schedule */
+@media (max-width: 1024px) {
+    .schedule-grid-header,
+    .schedule-grid-row {
+        grid-template-columns: 60px repeat(7, 1fr);
+    }
+
+    .working-hours-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .duration-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .schedule-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+        .schedule-controls span {
+            min-width: auto;
+        }
+
+    .working-hours-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .duration-options {
+        grid-template-columns: 1fr;
+    }
+
+    .time-off-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .time-off-actions {
+        align-self: flex-end;
+    }
+
+    .settings-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .schedule-grid-header,
+    .schedule-grid-row {
+        grid-template-columns: 50px repeat(7, 1fr);
+        font-size: 0.75rem;
+    }
+
+    .schedule-time-slot {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.65rem;
+    }
+
+    .schedule-day-header {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.75rem;
+    }
+
+    .day-name {
+        font-size: 0.65rem;
+    }
+
+    .day-date {
+        font-size: 1rem;
+    }
+
+    .schedule-cell {
+        min-height: 40px;
+        padding: 0.25rem;
+    }
+
+    .appointment-block {
+        font-size: 0.65rem;
+        padding: 0.25rem;
+    }
+
+    .available-slot {
+        font-size: 0.65rem;
+        padding: 0.25rem;
+    }
+}
+
+/* Specializations */
+.specializations-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.specialization-category h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.75rem 0;
+}
+
+.specialization-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.specialization-tag {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: var(--background);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+    .specialization-tag.primary {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .specialization-tag.certification {
+        background-color: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+
+/* Practice Statistics */
+.practice-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.practice-stat-card {
+    background-color: var(--background);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+}

@@ -39,9 +39,9 @@ namespace Services.Service
             return await _patientRepository.GetPatientsByDoctorAndStatusAsync(doctorId, status);
         }
 
-        public async Task<List<Patient>> SearchPatientsAsync(int doctorId, string searchTerm)
+        public IEnumerable<Patient> SearchPatientsAsync(int doctorId, string searchTerm)
         {
-            return await _patientRepository.SearchPatientsAsync(doctorId, searchTerm);
+            return _patientRepository.SearchPatientsAsync(doctorId, searchTerm);
         }
 
         public async Task<List<Patient>> GetCriticalPatientsAsync(int doctorId)

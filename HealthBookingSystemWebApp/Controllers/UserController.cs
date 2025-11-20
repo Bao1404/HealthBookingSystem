@@ -5,14 +5,16 @@ using Microsoft.AspNetCore.Mvc;
 using Repositories.IRepositories;
 using Services;
 using Services.Interface;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace HealthBookingSystem.Controllers
 {
     public class UserController : Controller
     {
+        private readonly HttpClient _httpClient;
         private readonly IUserService _userService;
-        private int? currentUser => HttpContext.Session.GetInt32("UserId");
+        private int? currentUser => HttpContext.Session.GetInt32("AccountId");
         private readonly IDoctorService _doctorService;
         private readonly ISpecialtyService _specialtyService;
         private readonly IAppointmentService _appointmentService;
@@ -26,7 +28,8 @@ namespace HealthBookingSystem.Controllers
             ISpecialtyService specialtyService, IAppointmentService appointmentService,
             IPatientService patientService,
             IMedicalHistoriesService medicalHistoriesService,
-            IConversationRepository conversationRepository, PhotoService photoService)
+            IConversationRepository conversationRepository, PhotoService photoService
+            , IHttpClientFactory httpClientFactory)
         {
             _userService = userService;
             _doctorService = doctorService;
@@ -36,6 +39,7 @@ namespace HealthBookingSystem.Controllers
             _medicalHistoriesService = medicalHistoriesService;
             _conversationRepository = conversationRepository;
             _photoService = photoService;
+            _httpClient = httpClientFactory.CreateClient("APIClient");
         }
         public async Task<IActionResult> Index()
         {
@@ -163,7 +167,7 @@ namespace HealthBookingSystem.Controllers
             var userAppointments = allAppointments.Where(a => a.PatientUserId == currentUserId.Value).ToList();
 
             var model = new BookAppointmentViewModel();
-            model.Specialties = (await _specialtyService.GetAllSpecialtiesAsync())
+            model.Specialties = (await GetAllSpecialties())
                 .Select(s => new SpecialtyViewModel
                 {
                     SpecialtyId = s.SpecialtyId,
@@ -226,7 +230,7 @@ namespace HealthBookingSystem.Controllers
             var userAppointments = allAppointments.Where(a => a.PatientUserId == currentUserId.Value).ToList();
 
             var model = new BookAppointmentViewModel();
-            model.Specialties = (await _specialtyService.GetAllSpecialtiesAsync())
+            model.Specialties = (await GetAllSpecialties())
                 .Select(s => new SpecialtyViewModel
                 {
                     SpecialtyId = s.SpecialtyId,
@@ -305,7 +309,7 @@ namespace HealthBookingSystem.Controllers
                 return RedirectToAction("Index", "Login");
             }
             var doctors =  await _doctorService.GetDoctorsAsync();
-            var specialties = await _specialtyService.GetAllSpecialtiesAsync();
+            var specialties = await GetAllSpecialties();
 
             var doctorViewModels = doctors.Select(d => new DoctorViewModel
             {
@@ -372,6 +376,17 @@ namespace HealthBookingSystem.Controllers
             var patient = await _patientService.GetByUserIdAsync(currentUser.Value);
             ViewBag.MedicalHistory = await _medicalHistoriesService.GetHistoryByUserId(currentUser.Value);
             return View(patient);
+        }
+        private async Task<List<SpecialtyDTO>> GetAllSpecialties()
+        {
+            var request = await _httpClient.GetAsync("Specialties?$expand=Doctors");
+            if (request.IsSuccessStatusCode)
+            {
+                var specialties = await request.Content.ReadFromJsonAsync<List<SpecialtyDTO>>();
+                return specialties ?? new List<SpecialtyDTO>();
+            }
+            return new List<SpecialtyDTO>();
+
         }
         [HttpPost("Edit")]
         public async Task<IActionResult> UpdateProfile()
@@ -543,7 +558,7 @@ namespace HealthBookingSystem.Controllers
             if (!ModelState.IsValid)
             {
                 // Reload data for form
-                model.Specialties = (await _specialtyService.GetAllSpecialtiesAsync())
+                model.Specialties = (await GetAllSpecialties())
                     .Select(s => new SpecialtyViewModel
                     {
                         SpecialtyId = s.SpecialtyId,
@@ -686,7 +701,7 @@ namespace HealthBookingSystem.Controllers
                 Notes = appointment.Notes
             };
 
-            model.Specialties = (await _specialtyService.GetAllSpecialtiesAsync())
+            model.Specialties = (await GetAllSpecialties())
                 .Select(s => new SpecialtyViewModel
                 {
                     SpecialtyId = s.SpecialtyId,

@@ -51,8 +51,8 @@ namespace Services.Service
         public IEnumerable<Appointment> GetAppointmentsByWeekAsync(int doctorId) =>
             _appointmentRepository.GetAppointmentsByWeekAsync(doctorId);
 
-        public async Task<List<Appointment>> GetAppointmentsByMonthAsync(int doctorId, DateTime monthStart) =>
-            await _appointmentRepository.GetAppointmentsByMonthAsync(doctorId, monthStart);
+        public IEnumerable<Appointment> GetAppointmentsByMonthAsync(int doctorId) =>
+            _appointmentRepository.GetAppointmentsByMonthAsync(doctorId);
         public async Task<List<Appointment>> GetAppointmentsByDateAsync(int doctorId, DateTime date) =>
             await _appointmentRepository.GetAppointmentsByDateAsync(doctorId, date);
         public IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId) => _appointmentRepository.GetAppointmentsByDoctorId(doctorId);

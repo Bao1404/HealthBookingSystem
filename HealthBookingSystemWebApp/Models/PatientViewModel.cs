@@ -4,7 +4,7 @@ namespace HealthBookingSystem.Models
     public class PatientsViewModel
     {
         public List<PatientInfo> AllPatients { get; set; } = new List<PatientInfo>();
-        public List<PatientInfo> FilteredPatients { get; set; } = new List<PatientInfo>();
+        public List<PatientInfo> Patients { get; set; } = new List<PatientInfo>();
         public string CurrentFilter { get; set; } = "all";
         public int TotalPatients { get; set; }
         public int ActivePatients { get; set; }
@@ -34,8 +34,6 @@ namespace HealthBookingSystem.Models
         public DateTime? NextAppointment { get; set; }
         public int TotalAppointments { get; set; }
         public int CompletedAppointments { get; set; }
-        public string PatientStatus { get; set; } = "Active"; // Active, Critical, Follow-up, New
-        public string StatusColor { get; set; } = "success";
         public DateTime? CreatedAt { get; set; }
         public string CreatedAtDisplay { get; set; } = string.Empty;
         public List<RecentAppointment> RecentAppointments { get; set; } = new List<RecentAppointment>();
