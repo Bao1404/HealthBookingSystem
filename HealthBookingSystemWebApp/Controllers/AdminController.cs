@@ -1,12 +1,10 @@
 ﻿using Azure;
 using BusinessObject.Models;
-using HealthBookingSystem.Models;
 using HealthBookingSystemWebApp.DTOs;
 using HealthCareSystem.Controllers.dto;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interface;
 using Services.Service;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using static Google.Apis.Requests.BatchRequest;
@@ -17,101 +15,86 @@ namespace HealthCareSystem.Controllers
     {
 
         private readonly HttpClient _client;
-        private int? currentUser => HttpContext.Session.GetInt32("AccountId");
-        private string? currentRole => HttpContext.Session.GetString("Role");
 
         public AdminController(IHttpClientFactory httpClientFactory)
         {
             _client = httpClientFactory.CreateClient("APIClient");
         }
+
+        public IActionResult Index()
+        {
+            ViewData["ActiveMenu"] = "Dashboard";
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDashboardStatistics()
+        {
+            try
+            {
+                var response = await _client.GetAsync("Admin/GetDashboardStatistics");
+
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var statistics = await response.Content.ReadFromJsonAsync<object>();
+
+                return Json(statistics);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        public async Task<IActionResult> Users()
+        {
+            ViewData["ActiveMenu"] = "UserManagement";
+            return View();
+        }
+
         public async Task<IActionResult> ManageDoctors()
         {
-            ViewData["ActiveMenu"] = "ManageDoctors";
-            if (currentUser == null)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            if (currentRole == "Doctor")
-            {
-                return RedirectToAction("Index", "Doctor");
-            }
-            if (currentRole == "Patient")
-            {
-                return RedirectToAction("Index", "User");
-            }
-            var doctors = await GetAllDoctors();
-            ViewBag.Specialties = await GetAllSpecialties();
+            var response = await _client.GetAsync("Admin/ManageDoctors");
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest("API Error: " + response.StatusCode);
+
+            var doctors = await response.Content.ReadFromJsonAsync<Doctor>();
             return View(doctors);
-        }
-        [HttpPost]
-        public async Task<IActionResult> AddDoctor(IFormCollection form)
-        {
-            var fullName = form["fullName"];
-            var email = form["email"];
-            var phoneNumber = form["phone"];
-            var password = form["password"];
-            var confirmPassword = form["confirmPassword"];
-            var experience = form["exp"];
-            var bio = form["bio"];
-            var specialtyId = form["specialty"];
-            if(password != confirmPassword)
-            {
-                TempData["ErrorMessage"] = "Passwords do not match.";
-                return RedirectToAction("ManageDoctors");
-            }
-            var doctor = new RegisterDoctorDTO
-            {
-                FullName = fullName,
-                Email = email,
-                PhoneNumber = phoneNumber,
-                Password = password,
-                Experience = experience,
-                Bio = bio,
-                SpecialtyId = int.Parse(specialtyId)
-            };
-            var response = await _client.PostAsJsonAsync("auth/register-doctor", doctor);
-            if (response.IsSuccessStatusCode)
-            {
-                TempData["Message"] = "Doctor added successfully.";
-                TempData["Type"] = "success";
-                return RedirectToAction("ManageDoctors");
-            }
-            else
-            {
-                TempData["Message"] = "Fail to add new doctor.";
-                TempData["Type"] = "error";
-                return RedirectToAction("ManageDoctors");
-            }
         }
 
         public async Task<IActionResult> ManagePatients()
         {
-            ViewData["ActiveMenu"] = "ManagePatients";
-            if (currentUser == null)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            if (currentRole == "Doctor")
-            {
-                return RedirectToAction("Index", "Doctor");
-            }
-            if (currentRole == "Patient")
-            {
-                return RedirectToAction("Index", "User");
-            }
-            var patients = await GetAllPatients();
+            var response = await _client.GetAsync("Admin/ManagePatients");
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest("API Error: " + response.StatusCode);
+
+            var patients = await response.Content.ReadFromJsonAsync<List<User>>();
             return View(patients);
         }
-        private async Task<List<PatientDTO>> GetAllPatients()
+
+        // User Detail Pages
+        public async Task<IActionResult> UserDetail(int id)
         {
-            var request = await _client.GetAsync("patients?$expand=User");
-            if (request.IsSuccessStatusCode)
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
             {
-                var patients = await request.Content.ReadFromJsonAsync<List<PatientDTO>>();
-                return patients ?? new List<PatientDTO>();
+                var response = await _client.GetAsync($"User/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                return View(user);
             }
-            return new List<PatientDTO>();
-        } 
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        // User Detail Pages
         public async Task<IActionResult> DoctorDetail(int id)
         {
             ViewData["ActiveMenu"] = "UserManagement";
@@ -134,58 +117,252 @@ namespace HealthCareSystem.Controllers
         // User Detail Pages
         public async Task<IActionResult> PatientDetail(int id)
         {
-            if (currentUser == null)
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
             {
-                return RedirectToAction("Index", "Login");
-            }
-            if (currentRole == "Doctor")
-            {
-                return RedirectToAction("Index", "Doctor");
-            }
-            if(currentRole == "Patient")
-            {
-                return RedirectToAction("Index", "User");
-            }
-            var patient = await GetPatientDetail(id);
-            if (patient == null)
-            {
-                TempData["ErrorMessage"] = "Patient not found.";
-                return RedirectToAction("Patients");
-            }
-            var viewModel = await BuildPatientDetailsViewModelAsync(patient, currentUser.Value);
-            return View(viewModel);
-        }
-        private async Task<List<DoctorDTO>> GetAllDoctors()
-        {
-            var request = await _client.GetAsync("doctors?$expand=Appointments,User,Specialty,TimeOffs,WorkingHours");
-            if (request.IsSuccessStatusCode)
-            {
-                var doctors = await request.Content.ReadFromJsonAsync<List<DoctorDTO>>();
-                return doctors ?? new List<DoctorDTO>();
-            }
-            return new List<DoctorDTO>();
-        }
-        private async Task<List<SpecialtyDTO>> GetAllSpecialties()
-        {
-            var request = await _client.GetAsync("Specialties?$expand=Doctors");
-            if (request.IsSuccessStatusCode)
-            {
-                var specialties = await request.Content.ReadFromJsonAsync<List<SpecialtyDTO>>();
-                return specialties ?? new List<SpecialtyDTO>();
-            }
-            return new List<SpecialtyDTO>();
+                var response = await _client.GetAsync($"User/{id}");
 
-        }
-        private async Task<PatientDTO> GetPatientDetail(int id)
-        {
-            var request = await _client.GetAsync($"patients/{id}?$expand=User,Appointments($expand=DoctorUser($expand=User),MedicalRecords),MedicalHistories");
-            if (request.IsSuccessStatusCode)
-            {
-                var patient = await request.Content.ReadFromJsonAsync<PatientDTO>();
-                return patient ?? new PatientDTO();
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
+                return View(user);
             }
-            return new PatientDTO();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
+
+        public async Task<IActionResult> UserEdit(int id)
+        {
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> DoctorEdit(int id, [FromForm] UpdateUserDto updateUserDto)
+        {
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                if (!ModelState.IsValid)
+                {
+                    var user = await response.Content.ReadFromJsonAsync<User>();
+                    return View("DoctorEdit", user);
+                }
+
+                var existingUser = await response.Content.ReadFromJsonAsync<User>();
+                if (existingUser == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                if (existingUser.Email != updateUserDto.Email)
+                {
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
+                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
+                    if (emailExists != null)
+                    {
+                        ModelState.AddModelError("Email", "Email already exists");
+                        return View("DoctorEdit", existingUser);
+                    }
+                }
+
+                existingUser.FullName = updateUserDto.FullName;
+                existingUser.Email = updateUserDto.Email;
+                existingUser.PhoneNumber = updateUserDto.PhoneNumber;
+                existingUser.Role = updateUserDto.Role;
+                existingUser.IsActive = updateUserDto.IsActive;
+                existingUser.UpdatedAt = DateTime.Now;
+                var content = JsonContent.Create(existingUser);
+                await _client.PutAsync("User", content);
+
+                TempData["SuccessMessage"] = "Doctor updated successfully!";
+                return RedirectToAction("DoctorDetail", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                return View("DoctorEdit", user);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PatientEdit(int id, [FromForm] UpdateUserDto updateUserDto)
+        {
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                if (!ModelState.IsValid)
+                {
+                    var user = await response.Content.ReadFromJsonAsync<User>();
+                    return View("PatientEdit", user);
+                }
+
+                var existingUser = await response.Content.ReadFromJsonAsync<User>();
+                if (existingUser == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                if (existingUser.Email != updateUserDto.Email)
+                {
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
+                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
+                    if (emailExists != null)
+                    {
+                        ModelState.AddModelError("Email", "Email already exists");
+                        return View("PatientEdit", existingUser);
+                    }
+                }
+
+                existingUser.FullName = updateUserDto.FullName;
+                existingUser.Email = updateUserDto.Email;
+                existingUser.PhoneNumber = updateUserDto.PhoneNumber;
+                existingUser.Role = updateUserDto.Role;
+                existingUser.IsActive = updateUserDto.IsActive;
+                existingUser.UpdatedAt = DateTime.Now;
+
+                var content = JsonContent.Create(existingUser);
+                await _client.PutAsync("User", content);
+
+                TempData["SuccessMessage"] = "Patient updated successfully!";
+                return RedirectToAction("PatientDetail", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                return View("PatientEdit", user);
+            }
+        }
+
+        public async Task<IActionResult> DoctorEdit(int id)
+        {
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        public async Task<IActionResult> PatientEdit(int id)
+        {
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UserEdit(int id, [FromForm] UpdateUserDto updateUserDto)
+        {
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                if (!ModelState.IsValid)
+                {
+                    var user = await response.Content.ReadFromJsonAsync<User>();
+                    return View(user);
+                }
+
+                var existingUser = await response.Content.ReadFromJsonAsync<User>();
+                if (existingUser == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                // Check if email is being changed and if it already exists
+                if (existingUser.Email != updateUserDto.Email)
+                {
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
+                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
+                    if (emailExists != null)
+                    {
+                        ModelState.AddModelError("Email", "Email already exists");
+                        return View(existingUser);
+                    }
+                }
+
+                existingUser.FullName = updateUserDto.FullName;
+                existingUser.Email = updateUserDto.Email;
+                existingUser.PhoneNumber = updateUserDto.PhoneNumber;
+                existingUser.Role = updateUserDto.Role;
+                existingUser.IsActive = updateUserDto.IsActive;
+                existingUser.UpdatedAt = DateTime.Now;
+
+                var content = JsonContent.Create(existingUser);
+                await _client.PutAsync("User", content);
+
+                TempData["SuccessMessage"] = "User updated successfully!";
+                return RedirectToAction("UserDetail", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                return View(user);
+            }
+        }
+
         public async Task<IActionResult> UserDelete(int id)
         {
             ViewData["ActiveMenu"] = "UserManagement";
@@ -207,94 +384,500 @@ namespace HealthCareSystem.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        private async Task<List<AppointmentDTO>> GetAppointmentsUserId(int userId)
+
+        public async Task<IActionResult> DoctorDelete(int id)
         {
-            var request = await _client.GetAsync($"appointments/user/{userId}?$expand=PatientUser($expand=User),DoctorUser($expand=User),MedicalRecords");
-            if (request.IsSuccessStatusCode)
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
             {
-                var appointments = await request.Content.ReadFromJsonAsync<List<AppointmentDTO>>();
-                return appointments ?? new List<AppointmentDTO>();
-            }
-            return new List<AppointmentDTO>();
-        }
-        private async Task<PatientDetailsViewModel> BuildPatientDetailsViewModelAsync(PatientDTO patient, int doctorId)
-        {
-            var appointments = await GetAppointmentsUserId(patient.UserId);
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
 
-            var appointmentHistory = appointments.Select(a => new AppointmentHistory
-            {
-                AppointmentId = a.AppointmentId,
-                AppointmentDateTime = a.AppointmentDateTime,
-                AppointmentDoctor = a.DoctorUser?.User.FullName ?? "Unknown",
-                Status = a.Status ?? "Unknown",
-                Notes = a.Notes ?? "",
-                DoctorNotes = a.Notes ?? "",
-                CreatedAt = a.CreatedAt
-            }).ToList();
-
-            var statistics = new PatientStatistics
-            {
-                TotalAppointments = appointments.Count,
-                CompletedAppointments = appointments.Count(a => a.Status == "Completed"),
-                CancelledAppointments = appointments.Count(a => a.Status == "Cancelled"),
-                FirstAppointment = appointments.LastOrDefault()?.AppointmentDateTime,
-                LastAppointment = appointments.FirstOrDefault()?.AppointmentDateTime,
-                PatientSince = patient.CreatedAt.ToString("MMMM yyyy") ?? "Unknown"
-            };
-
-            return new PatientDetailsViewModel
-            {
-                Patient = MapToPatientInfo(patient),
-                AppointmentHistory = appointmentHistory,
-                MedicalRecords = patient.Appointments
-                    .SelectMany(a => a.MedicalRecords)
-                    .OrderByDescending(mr => mr.CreatedAt)
-                    .ToList(),
-                Statistics = statistics
-            };
-        }
-        private PatientInfo MapToPatientInfo(PatientDTO patient)
-        {
-            var doctorAppointments = patient.Appointments.OrderBy(a => a.AppointmentDateTime).ToList();
-            var lastAppointment = doctorAppointments.LastOrDefault(a => a.AppointmentDateTime <= DateTime.Now);
-            var nextAppointment = doctorAppointments.FirstOrDefault(a => a.AppointmentDateTime > DateTime.Now && a.Status != "Cancelled");
-
-            var age = patient.DateOfBirth.HasValue
-                ? DateTime.Now.Year - patient.DateOfBirth.Value.Year
-                : (int?)null;
-
-            return new PatientInfo
-            {
-                UserId = patient.UserId,
-                FullName = patient.User.FullName,
-                Email = patient.User.Email,
-                Phone = patient.User.PhoneNumber,
-                Gender = patient.Gender,
-                DateOfBirth = patient.DateOfBirth,
-                Age = age,
-                BloodType = patient.BloodType,
-                Allergies = patient.Allergies,
-                Weight = patient.Weight,
-                Height = patient.Height,
-                Bmi = patient.Bmi,
-                Address = patient.Address,
-                EmergencyPhoneNumber = patient.EmergencyPhoneNumber,
-                AvatarUrl = patient.User.AvatarUrl ?? "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
-                LastAppointment = lastAppointment?.AppointmentDateTime,
-                NextAppointment = nextAppointment?.AppointmentDateTime,
-                TotalAppointments = doctorAppointments.Count,
-                CompletedAppointments = doctorAppointments.Count(a => a.Status == "Completed"),
-                CreatedAt = patient.CreatedAt,
-                CreatedAtDisplay = patient.CreatedAt.ToString("MMM dd, yyyy") ?? "N/A",
-                RecentAppointments = doctorAppointments.TakeLast(3).Select(a => new RecentAppointment
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                if (user == null)
                 {
-                    AppointmentId = a.AppointmentId,
-                    AppointmentDateTime = a.AppointmentDateTime,
-                    Status = a.Status ?? "Unknown",
-                    Notes = a.Notes ?? "",
-                    DateDisplay = a.AppointmentDateTime.ToString("MMM dd"),
-                    TimeDisplay = a.AppointmentDateTime.ToString("HH:mm")
-                }).ToList()
+                    return NotFound("User not found");
+                }
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        public async Task<IActionResult> PatientDelete(int id)
+        {
+            ViewData["ActiveMenu"] = "UserManagement";
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UserDeleteConfirmed(int id)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                await _client.DeleteAsync($"User/{id}");
+
+                TempData["SuccessMessage"] = "User deleted successfully!";
+                return RedirectToAction("Users");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("UserDelete", new { id = id });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DoctorDeleteConfirmed(int id)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                await _client.DeleteAsync($"User/{id}");
+
+                TempData["SuccessMessage"] = "Doctor deleted successfully!";
+                return RedirectToAction("ManageDoctors");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                return View("DoctorDelete", user);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PatientDeleteConfirmed(int id)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"User/{id}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                await _client.DeleteAsync($"User/{id}");
+
+                TempData["SuccessMessage"] = "Patient deleted successfully!";
+                return RedirectToAction("ManagePatients");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                var response = await _client.GetAsync($"User/{id}");
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                return View("PatientDelete", user);
+            }
+        }
+
+        public IActionResult Contents()
+        {
+            ViewData["ActiveMenu"] = "ContentManagement";
+            return View();
+        }
+
+        public IActionResult System()
+        {
+            ViewData["ActiveMenu"] = "SystemManagement";
+            return View();
+        }
+
+        public IActionResult Reports()  
+        {
+            ViewData["ActiveMenu"] = "Reports";
+            return View();
+        }
+
+        // API Actions for User Management
+        [HttpGet]
+        public async Task<IActionResult> GetUsers([FromQuery] UserFilterDto filter)
+        {
+            try
+            {
+                var response = await _client.GetAsync("User/GetAllUsers");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var allUsers = await response.Content.ReadFromJsonAsync<List<User>>();
+
+                var filteredUsers = allUsers.AsQueryable();
+
+                // Apply search filter
+                if (!string.IsNullOrEmpty(filter.SearchTerm))
+                {
+                    filteredUsers = filteredUsers.Where(u => 
+                        u.FullName.Contains(filter.SearchTerm, StringComparison.OrdinalIgnoreCase) || 
+                        u.Email.Contains(filter.SearchTerm, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // Apply role filter
+                if (!string.IsNullOrEmpty(filter.Role))
+                {
+                    filteredUsers = filteredUsers.Where(u => u.Role != null && u.Role.Equals(filter.Role, StringComparison.OrdinalIgnoreCase));
+                }
+
+                // Apply status filter
+                if (filter.IsActive.HasValue)
+                {
+                    filteredUsers = filteredUsers.Where(u => u.IsActive == filter.IsActive);
+                }
+
+                var totalCount = filteredUsers.Count();
+                var totalPages = (int)Math.Ceiling((double)totalCount / filter.PageSize);
+
+                // Apply pagination
+                var paginatedUsers = filteredUsers
+                    .Skip((filter.Page - 1) * filter.PageSize)
+                    .Take(filter.PageSize)
+                    .ToList();
+
+                //var userDtos = paginatedUsers.Select(MapToUserDto).ToList();
+
+                var responses = new UserListResponseDto
+                {
+                    //Users = userDtos,
+                    TotalCount = totalCount,
+                    Page = filter.Page,
+                    PageSize = filter.PageSize,
+                    TotalPages = totalPages
+                };
+
+                return Json(responses);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto createUserDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var responseExist = await _client.GetAsync($"User/CheckUserExist?email={createUserDto.Email}");
+
+                // Check if user already exists
+                var existingUser = await responseExist.Content.ReadFromJsonAsync<User>();
+                if (existingUser != null)
+                {
+                    return BadRequest(new { error = "User with this email already exists" });
+                }
+
+                var user = new UserDTO
+                {
+                    FullName = createUserDto.FullName,
+                    Email = createUserDto.Email,
+                    PhoneNumber = createUserDto.PhoneNumber,
+                    Role = createUserDto.Role,
+                    IsActive = createUserDto.IsActive,
+                    Password = createUserDto.Password,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+
+                //await _userService.CreateUser(user);
+
+                // TODO: Send welcome email if requested
+                if (createUserDto.SendWelcomeEmail)
+                {
+                    // Implement email sending logic here
+                }
+
+                return Ok(new { message = "User created successfully", userId = user.UserId });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto updateUserDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var response = await _client.GetAsync($"User/{updateUserDto.UserId}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var existingUser = await response.Content.ReadFromJsonAsync<User>();
+                if (existingUser == null)
+                {
+                    return NotFound(new { error = "User not found" });
+                }
+
+                // Check if email is being changed and if it already exists
+                if (existingUser.Email != updateUserDto.Email)
+                {
+
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
+                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
+                    if (emailExists != null)
+                    {
+                        return BadRequest(new { error = "Email already exists" });
+                    }
+                }
+
+                existingUser.FullName = updateUserDto.FullName;
+                existingUser.Email = updateUserDto.Email;
+                existingUser.PhoneNumber = updateUserDto.PhoneNumber;
+                existingUser.Role = updateUserDto.Role;
+                existingUser.IsActive = updateUserDto.IsActive;
+                existingUser.UpdatedAt = DateTime.Now;
+
+                await _client.PutAsync("User", JsonContent.Create(existingUser));
+
+                return Ok(new { message = "User updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteUser(int userId)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"User/{userId}");
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest("API Error: " + response.StatusCode);
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                if (user == null)
+                {
+                    return NotFound(new { error = "User not found" });
+                }
+
+                await _client.DeleteAsync($"User/{userId}");
+
+                return Ok(new { message = "User deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BulkAction([FromBody] BulkActionDto bulkActionDto)
+        {
+            try
+            {
+                if (bulkActionDto.UserIds == null || !bulkActionDto.UserIds.Any())
+                {
+                    return BadRequest(new { error = "No users selected" });
+                }
+
+                bool success = false;
+
+                switch (bulkActionDto.Action.ToLower())
+                {
+                    case "activate":
+                        success = (await _client.PostAsJsonAsync( "User/BulkUpdateUserStatus", new { UserIds = bulkActionDto.UserIds, IsActive = true })).IsSuccessStatusCode;
+                        break;
+                    case "deactivate":
+                        success = (await _client.PostAsJsonAsync( "User/BulkUpdateUserStatus", new { UserIds = bulkActionDto.UserIds, IsActive = false })).IsSuccessStatusCode;
+                        break;
+                    case "delete":
+                        success = (await _client.PostAsJsonAsync( "User/BulkDeleteUsers", new { UserIds = bulkActionDto.UserIds })).IsSuccessStatusCode;
+                        break;
+                    default:
+                        return BadRequest(new { error = "Invalid action" });
+                }
+
+                if (success)
+                {
+                    return Ok(new { message = $"Bulk {bulkActionDto.Action} completed successfully" });
+                }
+                else
+                {
+                    return BadRequest(new { error = $"Failed to perform bulk {bulkActionDto.Action}" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> CreateTestUsers()
+        {
+            try
+            {
+                var testUsers = new List<UserDTO>
+                {
+                    new UserDTO
+                    {
+                        FullName = "Dr. John Smith",
+                        Email = "doctor.john@test.com",
+                        PhoneNumber = "1234567890",
+                        Role = "doctor",
+                        Password = "password123",
+                        IsActive = true,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    },
+                    new UserDTO
+                    {
+                        FullName = "Admin User",
+                        Email = "admin@test.com",
+                        PhoneNumber = "0987654321",
+                        Role = "admin",
+                        Password = "password123",
+                        IsActive = true,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    },
+                    new UserDTO
+                    {
+                        FullName = "Staff Member",
+                        Email = "staff@test.com",
+                        PhoneNumber = "5555555555",
+                        Role = "staff",
+                        Password = "password123",
+                        IsActive = true,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    }
+                };
+
+                foreach (var user in testUsers)
+                {
+                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={user.Email}");
+                    var existingUser = await responseExist.Content.ReadFromJsonAsync<User>();
+                    if (existingUser == null)
+                    {
+                        //await _userService.CreateUser(user);
+                    }
+                }
+
+                return Json(new { message = "Test users created successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DebugUsers()
+        {
+            try
+            {
+                var response = await _client.GetAsync("User/GetAllUsers");
+
+                var allUsers = await response.Content.ReadFromJsonAsync<List<User>>();
+                var userRoles = allUsers.Select(u => new { u.UserId, u.FullName, u.Email, u.Role, u.IsActive }).ToList();
+                var roleCounts = allUsers.GroupBy(u => u.Role).Select(g => new { Role = g.Key, Count = g.Count() }).ToList();
+                
+                return Json(new { 
+                    totalUsers = allUsers.Count,
+                    users = userRoles,
+                    roles = allUsers.Select(u => u.Role).Where(r => !string.IsNullOrEmpty(r)).Distinct().ToList(),
+                    roleCounts = roleCounts
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUserStatus(int userId, bool isActive)
+        {
+            try
+            {
+                var success = (await _client.PostAsJsonAsync("User/UpdateUserStatus", new { UserIds = userId , IsActive = isActive })).IsSuccessStatusCode;
+                if (success)
+                {
+                    return Ok(new { message = "User status updated successfully" });
+                }
+                else
+                {
+                    return NotFound(new { error = "User not found" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        private UserDto MapToUserDto(UserDTO user)
+        {
+            return new UserDto
+            {
+                UserId = user.UserId,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role ?? "",
+                IsActive = (bool)user.IsActive,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
+                AvatarUrl = user.AvatarUrl
             };
         }
     }

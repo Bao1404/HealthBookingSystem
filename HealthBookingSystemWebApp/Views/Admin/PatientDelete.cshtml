@@ -1,0 +1,331 @@
+﻿@model UserDTO
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Delete User";
+}
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <header class="header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="header-title">Delete Patient</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="ManagePatients">Patient Management</a></li>
+                        <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="PatientDetail" asp-route-id="@Model.UserId">@Model.FullName</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Delete</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="header-actions">
+                <a asp-controller="Admin" asp-action="PatientDetail" asp-route-id="@Model.UserId" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Details
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- Warning Alert -->
+        <div class="alert alert-danger" role="alert">
+            <div class="d-flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="alert-heading">Warning: This action cannot be undone!</h5>
+                    <p class="mb-0">You are about to permanently delete this user account. This action will remove all associated data and cannot be reversed.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Information -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title">User Information</h5>
+            </div>
+            <div class="card-content">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="user-avatar-large mb-3">
+                            <img src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "/placeholder.svg?height=120&width=120" : Model.AvatarUrl)"
+                                 alt="@Model.FullName" class="rounded-circle" width="120" height="120">
+                        </div>
+                        <div class="user-status">
+                            <span class="badge bg-@(Model.IsActive == true ? "success" : "secondary") fs-6">
+                                @(Model.IsActive == true ? "Active" : "Inactive")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Full Name</label>
+                                    <p class="form-control-plaintext">@Model.FullName</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Email</label>
+                                    <p class="form-control-plaintext">@Model.Email</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Phone Number</label>
+                                    <p class="form-control-plaintext">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not provided" : Model.PhoneNumber)</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Role</label>
+                                    <p class="form-control-plaintext">
+                                        @{
+                                            var roleBadgeClass = Model.Role?.ToLower() switch
+                                            {
+                                                "admin" => "danger",
+                                                "doctor" => "primary",
+                                                "staff" => "warning",
+                                                "patient" => "success",
+                                                _ => "secondary"
+                                            };
+                                        }
+                                        <span class="badge bg-@roleBadgeClass">@Model.Role</span>
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">User ID</label>
+                                    <p class="form-control-plaintext">@Model.UserId</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Account Created</label>
+                                    <p class="form-control-plaintext">
+                                        @(Model.CreatedAt?.ToString("MMMM dd, yyyy 'at' HH:mm") ?? "Not available")
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Impact Analysis -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title">Impact Analysis</h5>
+            </div>
+            <div class="card-content">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-danger"><i class="fas fa-exclamation-circle"></i> What will be deleted:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-danger"></i> User account and profile</li>
+                            <li><i class="fas fa-check text-danger"></i> All associated messages</li>
+                            <li><i class="fas fa-check text-danger"></i> All conversations</li>
+                            <li><i class="fas fa-check text-danger"></i> All medical records</li>
+                            <li><i class="fas fa-check text-danger"></i> All prescriptions</li>
+                            <li><i class="fas fa-check text-danger"></i> All payments</li>
+                            <li><i class="fas fa-check text-danger"></i> All reviews</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-warning"><i class="fas fa-info-circle"></i> Related data:</h6>
+                        @if (Model.Doctor != null)
+                        {
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-user-md"></i> Doctor Profile</h6>
+                                <p class="mb-0">This user has a doctor profile that will also be deleted.</p>
+                            </div>
+                        }
+                        @if (Model.Patient != null)
+                        {
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-user-injured"></i> Patient Profile</h6>
+                                <p class="mb-0">This user has a patient profile that will also be deleted.</p>
+                            </div>
+                        }
+                        @if (Model.Doctor == null && Model.Patient == null)
+                        {
+                            <p class="text-muted">No additional profiles found.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alternative Actions -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title">Alternative Actions</h5>
+            </div>
+            <div class="card-content">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb"></i> Consider these alternatives before deleting:</h6>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                @if (Model.IsActive == true)
+                                {
+                                    <button class="btn btn-warning" onclick="deactivateUser(@Model.UserId)">
+                                        <i class="fas fa-pause"></i>
+                                        Deactivate User Instead
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-success" onclick="activateUser(@Model.UserId)">
+                                        <i class="fas fa-play"></i>
+                                        Reactivate User Instead
+                                    </button>
+                                }
+                                <button class="btn btn-info" onclick="resetPassword(@Model.UserId)">
+                                    <i class="fas fa-key"></i>
+                                    Reset Password
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted">
+                                <strong>Deactivating</strong> a user is often a better option as it:
+                            </p>
+                            <ul class="text-muted">
+                                <li>Preserves all user data</li>
+                                <li>Can be easily reversed</li>
+                                <li>Maintains data integrity</li>
+                                <li>Allows for future reactivation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Form -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h5 class="card-title">Confirm Deletion</h5>
+            </div>
+            <div class="card-content">
+                <form asp-controller="Admin" asp-action="UserDeleteConfirmed" asp-route-id="@Model.UserId" method="post" id="deleteForm">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                            <label class="form-check-label" for="confirmDelete">
+                                I understand that this action will permanently delete the user account and all associated data, and this action cannot be undone.
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deleteReason" class="form-label">Reason for deletion (optional):</label>
+                        <textarea class="form-control" id="deleteReason" name="deleteReason" rows="3" placeholder="Please provide a reason for deleting this user account..."></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <a asp-controller="Admin" asp-action="UserDetail" asp-route-id="@Model.UserId" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                                Cancel
+                            </a>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                                <i class="fas fa-trash"></i>
+                                Permanently Delete User
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Enable/disable delete button based on checkbox
+    document.getElementById('confirmDelete').addEventListener('change', function() {
+        document.getElementById('deleteButton').disabled = !this.checked;
+    });
+
+    // Form submission confirmation
+    document.getElementById('deleteForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const userEmail = '@Model.Email';
+        const userFullName = '@Model.FullName';
+
+        const confirmation = confirm(
+            `Are you absolutely sure you want to permanently delete this user?\n\n` +
+            `User: ${userFullName}\n` +
+            `Email: ${userEmail}\n\n` +
+            `This action cannot be undone and will delete all associated data.`
+        );
+
+        if (confirmation) {
+            this.submit();
+        }
+    });
+
+    function deactivateUser(userId) {
+        if (confirm('Are you sure you want to deactivate this user instead of deleting?')) {
+            fetch(`/Admin/UpdateUserStatus?userId=${userId}&isActive=false`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('User deactivated successfully!');
+                    window.location.href = `/Admin/UserDetail/${userId}`;
+                } else {
+                    alert(data.error || 'Failed to deactivate user');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deactivating the user');
+            });
+        }
+    }
+
+    function activateUser(userId) {
+        if (confirm('Are you sure you want to activate this user?')) {
+            fetch(`/Admin/UpdateUserStatus?userId=${userId}&isActive=true`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('User activated successfully!');
+                    window.location.href = `/Admin/UserDetail/${userId}`;
+                } else {
+                    alert(data.error || 'Failed to activate user');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while activating the user');
+            });
+        }
+    }
+
+    function resetPassword(userId) {
+        if (confirm('Are you sure you want to reset this user\'s password?')) {
+            alert('Password reset functionality would be implemented here');
+        }
+    }
+</script> 

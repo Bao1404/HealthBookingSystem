@@ -6,18 +6,13 @@ let selectedRole = ""
 document.addEventListener("DOMContentLoaded", () => {
     initializeForm()
     setupEventListeners()
-    showStep(1) // Đảm bảo step 1 hiện khi load
-    updateProgressBar()
 })
 
 function initializeForm() {
-    // Initialize password strength checker AND requirements list
+    // Initialize password strength checker
     const passwordInput = document.getElementById("password")
     if (passwordInput) {
-        passwordInput.addEventListener("input", function () {
-            checkPasswordStrength()      // Kiểm tra thanh sức mạnh (cũ)
-            updatePasswordRequirements() // Kiểm tra danh sách yêu cầu (MỚI)
-        })
+        passwordInput.addEventListener("input", checkPasswordStrength)
     }
 
     // Initialize BMI calculator
@@ -193,7 +188,14 @@ function validateCurrentStep() {
         const confirmPassword = document.getElementById("confirmPassword").value
 
         if (password !== confirmPassword) {
-            showFieldError(document.getElementById("confirmPassword"), "Mật khẩu không khớp.")
+            showFieldError(document.getElementById("confirmPassword"), "Passwords do not match.")
+            isValid = false
+        }
+
+        // Validate role selection
+        if (!selectedRole) {
+            const roleContainer = document.querySelector(".role-selection")
+            roleContainer.classList.add("is-invalid")
             isValid = false
         }
     }
@@ -201,7 +203,6 @@ function validateCurrentStep() {
     return isValid
 }
 
-// --- CẬP NHẬT LOGIC VALIDATE ---
 function validateField(event) {
     const field = event.target
     const value = field.value.trim()
@@ -212,7 +213,7 @@ function validateField(event) {
 
     // Required field validation
     if (field.hasAttribute("required") && !value) {
-        showFieldError(field, "Trường này là bắt buộc.")
+        showFieldError(field, "This field is required.")
         isValid = false
     }
 
@@ -220,23 +221,16 @@ function validateField(event) {
     if (field.type === "email" && value) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(value)) {
-            showFieldError(field, "Vui lòng nhập địa chỉ email hợp lệ.")
+            showFieldError(field, "Please enter a valid email address.")
             isValid = false
         }
     }
 
-    // Password validation (CẬP NHẬT: Kiểm tra tất cả các yêu cầu)
+    // Password validation
     if (field.id === "password" && value) {
-        const lengthCheck = value.length >= 8;
-        const upperCheck = /[A-Z]/.test(value);
-        const lowerCheck = /[a-z]/.test(value);
-        const numberCheck = /[\d\W]/.test(value);
-
-        if (!lengthCheck || !upperCheck || !lowerCheck || !numberCheck) {
-            showFieldError(field, "Mật khẩu chưa đủ mạnh. Vui lòng kiểm tra các yêu cầu bên dưới.")
+        if (value.length < 8) {
+            showFieldError(field, "Password must be at least 8 characters long.")
             isValid = false
-            // Cập nhật lại list UI để người dùng thấy cái nào thiếu
-            updatePasswordRequirements()
         }
     }
 
@@ -244,7 +238,7 @@ function validateField(event) {
     if (field.type === "tel" && value) {
         const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
         if (!phoneRegex.test(value)) {
-            showFieldError(field, "Vui lòng nhập số điện thoại Việt Nam hợp lệ (VD: 0905xxxxxx).");
+            showFieldError(field, "Please enter a valid Vietnamese phone number (e.g., 0905xxxxxx).");
             isValid = false;
         }
     }
@@ -264,7 +258,7 @@ function clearValidation(event) {
     // Clear role selection validation
     if (field.name === "role") {
         const roleContainer = document.querySelector(".role-selection")
-        if (roleContainer) roleContainer.classList.remove("is-invalid")
+        roleContainer.classList.remove("is-invalid")
     }
 }
 
@@ -283,46 +277,10 @@ function validatePasswordMatch() {
     const confirmPassword = document.getElementById("confirmPassword").value
 
     if (confirmPassword && password !== confirmPassword) {
-        showFieldError(document.getElementById("confirmPassword"), "Mật khẩu không khớp.")
+        showFieldError(document.getElementById("confirmPassword"), "Passwords do not match.")
     } else {
         clearValidation({ target: document.getElementById("confirmPassword") })
     }
-}
-
-// --- HÀM MỚI: Cập nhật danh sách yêu cầu mật khẩu ---
-function updatePasswordRequirements() {
-    const password = document.getElementById("password").value;
-
-    // Các rule kiểm tra
-    const requirements = [
-        { id: "req-length", valid: password.length >= 8 },
-        { id: "req-upper", valid: /[A-Z]/.test(password) },
-        { id: "req-lower", valid: /[a-z]/.test(password) },
-        { id: "req-number", valid: /[\d\W]/.test(password) } // Số hoặc ký tự đặc biệt
-    ];
-
-    requirements.forEach(req => {
-        const item = document.getElementById(req.id);
-        if (item) {
-            const icon = item.querySelector("i");
-
-            if (req.valid) {
-                item.classList.add("valid"); // Thêm class xanh
-                item.classList.remove("invalid");
-                // Đổi icon sang dấu tick (nếu dùng fontawesome)
-                if (icon) {
-                    icon.className = "fas fa-check-circle";
-                }
-            } else {
-                item.classList.remove("valid");
-                item.classList.add("invalid"); // Thêm class xám/đỏ
-                // Đổi icon về dấu chấm
-                if (icon) {
-                    icon.className = "fas fa-circle";
-                }
-            }
-        }
-    });
 }
 
 function checkPasswordStrength() {
@@ -330,11 +288,8 @@ function checkPasswordStrength() {
     const strengthBar = document.querySelector(".strength-fill")
     const strengthText = document.querySelector(".strength-text")
 
-    // Nếu không có element thì return để tránh lỗi
-    if (!strengthBar || !strengthText) return;
-
     let strength = 0
-    let strengthLabel = "Yếu"
+    let strengthLabel = "Weak"
     let strengthColor = "#ef4444"
 
     // Length check
@@ -351,29 +306,28 @@ function checkPasswordStrength() {
 
     // Determine strength label and color
     if (strength >= 75) {
-        strengthLabel = "Mạnh"
+        strengthLabel = "Strong"
         strengthColor = "#10b981"
     } else if (strength >= 50) {
-        strengthLabel = "Trung bình"
+        strengthLabel = "Medium"
         strengthColor = "#f59e0b"
     } else if (strength >= 25) {
-        strengthLabel = "Khá"
+        strengthLabel = "Fair"
         strengthColor = "#f97316"
     }
 
     // Update UI
     strengthBar.style.width = `${strength}%`
     strengthBar.style.backgroundColor = strengthColor
-    strengthText.textContent = `Độ mạnh mật khẩu: ${strengthLabel}`
+    strengthText.textContent = `Password strength: ${strengthLabel}`
     strengthText.style.color = strengthColor
 }
 
 function calculateBMI() {
     const weight = Number.parseFloat(document.getElementById("weight").value)
     const height = Number.parseFloat(document.getElementById("height").value)
-
-    // Check if elements exist
-    if (!document.getElementById("bmi")) return;
+    const weightUnit = document.getElementById("weightUnit").value
+    const heightUnit = document.getElementById("heightUnit").value
 
     if (!weight || !height) {
         document.getElementById("bmi").value = ""
@@ -381,9 +335,10 @@ function calculateBMI() {
         return
     }
 
-    // Convert to metric units (assuming height is cm)
+    // Convert to metric units
     let weightKg = weight
     let heightM = height / 100
+
 
     // Calculate BMI
     const bmi = weightKg / (heightM * heightM)
@@ -394,24 +349,22 @@ function calculateBMI() {
     let categoryClass = ""
 
     if (bmi < 18.5) {
-        category = "Thiếu cân"
+        category = "Underweight"
         categoryClass = "underweight"
     } else if (bmi < 25) {
-        category = "Bình thường"
+        category = "Normal"
         categoryClass = "normal"
     } else if (bmi < 30) {
-        category = "Thừa cân"
+        category = "Overweight"
         categoryClass = "overweight"
     } else {
-        category = "Béo phì"
+        category = "Obese"
         categoryClass = "obese"
     }
 
     const categoryEl = document.getElementById("bmiCategory")
-    if (categoryEl) {
-        categoryEl.textContent = category
-        categoryEl.className = `bmi-category ${categoryClass}`
-    }
+    categoryEl.textContent = category
+    categoryEl.className = `bmi-category ${categoryClass}`
 }
 
 function togglePassword(fieldId) {
@@ -430,7 +383,23 @@ function togglePassword(fieldId) {
     }
 }
 
-// function processSignup() { ... } (Bạn có thể uncomment phần này nếu cần dùng lại)
+//function processSignup() {
+//    // Simulate account creation
+//    setTimeout(() => {
+//        // Collect form data
+//        const formData = new FormData(document.getElementById("multiStepSignupForm"))
+//        const userData = Object.fromEntries(formData.entries())
+
+//        // Store user data (in real app, this would be sent to server)
+//        localStorage.setItem("isLoggedIn", "true")
+//        localStorage.setItem("userEmail", userData.email)
+//        localStorage.setItem("userName", `${userData.firstName} ${userData.lastName}`)
+//        localStorage.setItem("userRole", selectedRole)
+//        localStorage.setItem("userData", JSON.stringify(userData))
+
+//        console.log("User registered:", userData)
+//    }, 1000)
+//}
 
 function goToDashboard() {
     window.location.href = "dashboard-modern.html"
@@ -439,3 +408,9 @@ function goToDashboard() {
 function completeProfile() {
     window.location.href = "profile.html"
 }
+
+// Initialize form when page loads
+document.addEventListener("DOMContentLoaded", () => {
+    showStep(1)
+    updateProgressBar()
+})

@@ -13,7 +13,7 @@ namespace Repositories.Repositories
         {
             _context = context;
         }
-        public IEnumerable<Doctor> GetAll() => _context.Doctors;
+        public IEnumerable<Doctor> GetAll() => _context.Doctors.ToList();
         public Doctor GetById(int id) => _context.Doctors.Find(id);
         public void Add(Doctor doctor)
         {

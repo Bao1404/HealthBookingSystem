@@ -23,11 +23,11 @@ namespace HealthBookingSystemAPI.Controllers
             var appointments = _appointmentService.GetAllAppointmentsAsync();
             return Ok(appointments);
         }
-        [HttpGet("user/{id}")]
+        [HttpGet("doctor/{id}")]
         [EnableQuery]
-        public async Task<IActionResult> GetAppointmentsByUserId(int id)
+        public async Task<IActionResult> GetAppointmentsByDoctorId(int id)
         {
-            var appointments = _appointmentService.GetAppointmentsByUserId(id);
+            var appointments = _appointmentService.GetAppointmentsByDoctorId(id);
             return Ok(appointments);
         }
         [HttpGet("week/{id}")]
