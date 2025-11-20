@@ -5,6 +5,7 @@ using HealthCareSystem.Controllers.dto;
 using Microsoft.AspNetCore.Mvc;
 using Services.Interface;
 using Services.Service;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using static Google.Apis.Requests.BatchRequest;
@@ -32,12 +33,7 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var response = await _client.GetAsync("Admin/GetDashboardStatistics");
-
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
-                var statistics = await response.Content.ReadFromJsonAsync<object>();
+                var statistics = await _client.GetFromJsonAsync<object>("Admin/GetDashboardStatistics");
 
                 return Json(statistics);
             }
@@ -55,23 +51,13 @@ namespace HealthCareSystem.Controllers
 
         public async Task<IActionResult> ManageDoctors()
         {
-            var response = await _client.GetAsync("Admin/ManageDoctors");
-
-            if (!response.IsSuccessStatusCode)
-                return BadRequest("API Error: " + response.StatusCode);
-
-            var doctors = await response.Content.ReadFromJsonAsync<Doctor>();
+            var doctors = await _client.GetFromJsonAsync<List<User>>("Admin/ManageDoctors");
             return View(doctors);
         }
 
         public async Task<IActionResult> ManagePatients()
         {
-            var response = await _client.GetAsync("Admin/ManagePatients");
-
-            if (!response.IsSuccessStatusCode)
-                return BadRequest("API Error: " + response.StatusCode);
-
-            var patients = await response.Content.ReadFromJsonAsync<List<User>>();
+            var patients = await _client.GetFromJsonAsync<List<User>>("Admin/ManagePatients");
             return View(patients);
         }
 
@@ -81,12 +67,7 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
                 return View(user);
             }
             catch (Exception ex)
@@ -100,12 +81,7 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
                 return View(user);
             }
@@ -120,12 +96,7 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
                 return View(user);
             }
@@ -140,12 +111,7 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
                 return View(user);
             }
@@ -160,18 +126,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
                 if (!ModelState.IsValid)
                 {
-                    var user = await response.Content.ReadFromJsonAsync<User>();
+                    var user = await _client.GetFromJsonAsync<User>($"User/{id}");
                     return View("DoctorEdit", user);
                 }
 
-                var existingUser = await response.Content.ReadFromJsonAsync<User>();
+                var existingUser = await _client.GetFromJsonAsync<User>($"User/{id}");
                 if (existingUser == null)
                 {
                     return NotFound("User not found");
@@ -179,8 +140,7 @@ namespace HealthCareSystem.Controllers
 
                 if (existingUser.Email != updateUserDto.Email)
                 {
-                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
-                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
+                    var emailExists = await _client.GetFromJsonAsync<User>($"User/CheckUserExist?email={updateUserDto.Email}");
                     if (emailExists != null)
                     {
                         ModelState.AddModelError("Email", "Email already exists");
@@ -194,8 +154,8 @@ namespace HealthCareSystem.Controllers
                 existingUser.Role = updateUserDto.Role;
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
-                var content = JsonContent.Create(existingUser);
-                await _client.PutAsync("User", content);
+
+                await _client.PutAsJsonAsync("User", existingUser);
 
                 TempData["SuccessMessage"] = "Doctor updated successfully!";
                 return RedirectToAction("DoctorDetail", new { id = id });
@@ -203,8 +163,7 @@ namespace HealthCareSystem.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                var response = await _client.GetAsync($"User/{id}");
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
                 return View("DoctorEdit", user);
             }
         }
@@ -215,17 +174,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
                 if (!ModelState.IsValid)
                 {
-                    var user = await response.Content.ReadFromJsonAsync<User>();
+                    var user = await _client.GetFromJsonAsync<User>($"User/{id}");
                     return View("PatientEdit", user);
                 }
 
-                var existingUser = await response.Content.ReadFromJsonAsync<User>();
+                var existingUser = await _client.GetFromJsonAsync<User>($"User/{id}");
                 if (existingUser == null)
                 {
                     return NotFound("User not found");
@@ -233,8 +188,7 @@ namespace HealthCareSystem.Controllers
 
                 if (existingUser.Email != updateUserDto.Email)
                 {
-                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
-                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
+                    var emailExists = await _client.GetFromJsonAsync<User>($"User/CheckUserExist?email={updateUserDto.Email}");
                     if (emailExists != null)
                     {
                         ModelState.AddModelError("Email", "Email already exists");
@@ -249,8 +203,7 @@ namespace HealthCareSystem.Controllers
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
 
-                var content = JsonContent.Create(existingUser);
-                await _client.PutAsync("User", content);
+                await _client.PutAsJsonAsync("User", existingUser);
 
                 TempData["SuccessMessage"] = "Patient updated successfully!";
                 return RedirectToAction("PatientDetail", new { id = id });
@@ -258,8 +211,7 @@ namespace HealthCareSystem.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                var response = await _client.GetAsync($"User/{id}");
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
                 return View("PatientEdit", user);
             }
         }
@@ -269,15 +221,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
-                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
+
                 return View(user);
             }
             catch (Exception ex)
@@ -290,15 +240,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
-                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
+
                 return View(user);
             }
             catch (Exception ex)
@@ -313,17 +261,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
                 if (!ModelState.IsValid)
                 {
-                    var user = await response.Content.ReadFromJsonAsync<User>();
+                    var user = await _client.GetFromJsonAsync<User>($"User/{id}");
                     return View(user);
                 }
 
-                var existingUser = await response.Content.ReadFromJsonAsync<User>();
+                var existingUser = await _client.GetFromJsonAsync<User>($"User/{id}");
                 if (existingUser == null)
                 {
                     return NotFound("User not found");
@@ -332,8 +276,7 @@ namespace HealthCareSystem.Controllers
                 // Check if email is being changed and if it already exists
                 if (existingUser.Email != updateUserDto.Email)
                 {
-                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
-                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
+                    var emailExists = await _client.GetFromJsonAsync<User>($"User/CheckUserExist?email={updateUserDto.Email}");
                     if (emailExists != null)
                     {
                         ModelState.AddModelError("Email", "Email already exists");
@@ -348,8 +291,7 @@ namespace HealthCareSystem.Controllers
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
 
-                var content = JsonContent.Create(existingUser);
-                await _client.PutAsync("User", content);
+                await _client.PutAsJsonAsync("User", existingUser);
 
                 TempData["SuccessMessage"] = "User updated successfully!";
                 return RedirectToAction("UserDetail", new { id = id });
@@ -368,15 +310,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
-                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
+
                 return View(user);
             }
             catch (Exception ex)
@@ -390,15 +330,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
-                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
+
                 return View(user);
             }
             catch (Exception ex)
@@ -411,15 +349,13 @@ namespace HealthCareSystem.Controllers
             ViewData["ActiveMenu"] = "UserManagement";
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
-                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
                 }
+
                 return View(user);
             }
             catch (Exception ex)
@@ -433,11 +369,8 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
-                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound("User not found");
@@ -460,11 +393,7 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
                 if (user == null)
                 {
@@ -479,8 +408,7 @@ namespace HealthCareSystem.Controllers
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                var response = await _client.GetAsync($"User/{id}");
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
                 return View("DoctorDelete", user);
             }
         }
@@ -490,11 +418,7 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var response = await _client.GetAsync($"User/{id}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
 
                 if (user == null)
                 {
@@ -509,8 +433,7 @@ namespace HealthCareSystem.Controllers
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                var response = await _client.GetAsync($"User/{id}");
-                var user = await response.Content.ReadFromJsonAsync<User>();
+                var user = await _client.GetFromJsonAsync<User>($"User/{id}");
                 return View("PatientDelete", user);
             }
         }
@@ -539,11 +462,7 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var response = await _client.GetAsync("User/GetAllUsers");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
-                var allUsers = await response.Content.ReadFromJsonAsync<List<User>>();
+                var allUsers = await _client.GetFromJsonAsync<List<User>>("User");
 
                 var filteredUsers = allUsers.AsQueryable();
 
@@ -600,15 +519,8 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                var responseExist = await _client.GetAsync($"User/CheckUserExist?email={createUserDto.Email}");
-
                 // Check if user already exists
-                var existingUser = await responseExist.Content.ReadFromJsonAsync<User>();
+                var existingUser = await _client.GetFromJsonAsync<User>($"User/CheckUserExist?email={createUserDto.Email}");
                 if (existingUser != null)
                 {
                     return BadRequest(new { error = "User with this email already exists" });
@@ -652,11 +564,7 @@ namespace HealthCareSystem.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var response = await _client.GetAsync($"User/{updateUserDto.UserId}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
-
-                var existingUser = await response.Content.ReadFromJsonAsync<User>();
+                var existingUser = await _client.GetFromJsonAsync<User>($"User/{updateUserDto.UserId}");
                 if (existingUser == null)
                 {
                     return NotFound(new { error = "User not found" });
@@ -666,8 +574,7 @@ namespace HealthCareSystem.Controllers
                 if (existingUser.Email != updateUserDto.Email)
                 {
 
-                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={updateUserDto.Email}");
-                    var emailExists = await responseExist.Content.ReadFromJsonAsync<User>();
+                    var emailExists = await _client.GetFromJsonAsync<User>($"User/CheckUserExist?email={updateUserDto.Email}");
                     if (emailExists != null)
                     {
                         return BadRequest(new { error = "Email already exists" });
@@ -681,7 +588,7 @@ namespace HealthCareSystem.Controllers
                 existingUser.IsActive = updateUserDto.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
 
-                await _client.PutAsync("User", JsonContent.Create(existingUser));
+                await _client.PutAsJsonAsync("User", existingUser);
 
                 return Ok(new { message = "User updated successfully" });
             }
@@ -696,11 +603,8 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var response = await _client.GetAsync($"User/{userId}");
-                if (!response.IsSuccessStatusCode)
-                    return BadRequest("API Error: " + response.StatusCode);
+                var user = await _client.GetFromJsonAsync<User>($"User/{userId}");
 
-                var user = await response.Content.ReadFromJsonAsync<User>();
                 if (user == null)
                 {
                     return NotFound(new { error = "User not found" });
@@ -804,8 +708,7 @@ namespace HealthCareSystem.Controllers
 
                 foreach (var user in testUsers)
                 {
-                    var responseExist = await _client.GetAsync($"User/CheckUserExist?email={user.Email}");
-                    var existingUser = await responseExist.Content.ReadFromJsonAsync<User>();
+                    var existingUser = await _client.GetFromJsonAsync<User>($"User/CheckUserExist?email={user.Email}");
                     if (existingUser == null)
                     {
                         //await _userService.CreateUser(user);
@@ -825,9 +728,7 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var response = await _client.GetAsync("User/GetAllUsers");
-
-                var allUsers = await response.Content.ReadFromJsonAsync<List<User>>();
+                var allUsers = await _client.GetFromJsonAsync<List<User>>("User/GetAllUsers");
                 var userRoles = allUsers.Select(u => new { u.UserId, u.FullName, u.Email, u.Role, u.IsActive }).ToList();
                 var roleCounts = allUsers.GroupBy(u => u.Role).Select(g => new { Role = g.Key, Count = g.Count() }).ToList();
                 

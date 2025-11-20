@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using HealthBookingSystemAPI.DTOs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Services.Interface;
+using Services.Service;
 
 namespace HealthBookingSystemAPI.Controllers
 {
@@ -45,6 +47,67 @@ namespace HealthBookingSystemAPI.Controllers
                 return NotFound();
             }
             return Ok(patient);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePatient(int id, [FromBody] PatientUpdateDTO patientDTO)
+        {
+            var patient = _patientService.GetPatientById(id);
+            if (id != patient.UserId)
+            {
+                return BadRequest("Doctor ID mismatch.");
+            }
+            if (patientDTO.FullName != null)
+            {
+                patient.User.FullName = patientDTO.FullName;
+            }
+            if (patientDTO.Email != null)
+            {
+                patient.User.Email = patientDTO.Email;
+            }
+            if (patientDTO.EmergencyPhoneNumber != null)
+            {
+                patient.EmergencyPhoneNumber = patientDTO.EmergencyPhoneNumber;
+            }
+            if (patientDTO.Phone != null)
+            {
+                patient.User.PhoneNumber = patientDTO.Phone;
+            }
+            if (patientDTO.DateOfBirth != null)
+            {
+                patient.DateOfBirth = patientDTO.DateOfBirth;
+            }
+            if (patientDTO.Address != null)
+            {
+                patient.Address = patientDTO.Address;
+            }
+            if (patientDTO.Gender != null)
+            {
+                patient.Gender = patient.Gender;
+            }
+            if (patientDTO.BloodType != null)
+            {
+                patient.BloodType = patientDTO.BloodType;
+            }
+            if (patientDTO.Weight != null)
+            {
+                patient.Weight = patientDTO.Weight;
+            }
+            if (patientDTO.Height != null)
+            {
+                patient.Height = patientDTO.Height;
+            }
+            if (patientDTO.Bmi != null)
+            {
+                patient.Bmi = patientDTO.Bmi;
+            }
+            if (patientDTO.AvatarUrl != null)
+            {
+                patient.User.AvatarUrl = patientDTO.AvatarUrl;
+            }
+
+            await _patientService.UpdatePatient(patient);
+            return NoContent();
         }
     }
 }

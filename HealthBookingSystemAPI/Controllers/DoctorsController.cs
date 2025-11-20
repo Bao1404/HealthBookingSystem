@@ -16,6 +16,13 @@ namespace HealthBookingSystemAPI.Controllers
         {
             _doctorService = doctorService;
         }
+        [HttpGet]
+        [EnableQuery]
+        public async Task<IActionResult> GetAllDoctors()
+        {
+            var doctors = _doctorService.GetAllDoctors();
+            return Ok(doctors);
+        }
         [HttpGet("{id}")]
         [EnableQuery]
         public async Task<IActionResult> GetDoctorById(int id)
@@ -62,5 +69,13 @@ namespace HealthBookingSystemAPI.Controllers
             _doctorService.UpdateDoctor(doctor);
             return NoContent();
         }
+        [HttpGet("speciality/{id}")]
+        [EnableQuery]
+        public async Task<IActionResult> GetBySpecialtyAsync(int id)
+        {
+            var doctors = _doctorService.GetBySpecialtyAsync(id);
+            return Ok(doctors);
+        }
+
     }
 }
