@@ -25,7 +25,7 @@ namespace Services.Interface
         Task<List<Appointment>> GetCompletedAppointmentsByDoctorAsync(int doctorId);
         Task<List<Appointment>> GetCancelledAppointmentsByDoctorAsync(int doctorId);
         Task<List<Appointment>> GetAppointmentsByDoctorAndStatusAsync(int doctorId, string status);
-        IEnumerable<Appointment> GetAppointmentsByUserId(int userId);
+        IEnumerable<Appointment> GetAppointmentsByDoctorId(int doctorId);
         Task<bool> ApproveAppointmentAsync(int appointmentId, int doctorId);
         Task<bool> RejectAppointmentAsync(int appointmentId, int doctorId, string? reason = null);
         IEnumerable<Appointment> GetAppointmentsByWeekAsync(int doctorId);

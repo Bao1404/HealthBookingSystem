@@ -4,9 +4,9 @@ namespace HealthBookingSystem.Models
     public class DashboardViewModel
     {
         public UserDTO CurrentUser { get; set; }
-        public List<AppointmentViewModel> UpcomingAppointments { get; set; } = new List<AppointmentViewModel>();
+        public List<AppointmentDTO> UpcomingAppointments { get; set; } = new List<AppointmentDTO>();
         public List<AppointmentViewModel> RecentAppointments { get; set; } = new List<AppointmentViewModel>();
-        public List<AppointmentViewModel> TodayAppointments { get; set; } = new List<AppointmentViewModel>();
+        public List<AppointmentDTO> TodayAppointments { get; set; } = new List<AppointmentDTO>();
         public DashboardStats Stats { get; set; } = new DashboardStats();
     }
 
