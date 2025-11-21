@@ -16,33 +16,15 @@ namespace HealthBookingSystem.Controllers
     public class UserController : Controller
     {
         private readonly HttpClient _httpClient;
-        private readonly IUserService _userService;
         private int? currentUser => HttpContext.Session.GetInt32("AccountId");
-        private readonly IDoctorService _doctorService;
-        private readonly ISpecialtyService _specialtyService;
-        private readonly IAppointmentService _appointmentService;
-        private readonly IPatientService _patientService;
-        private readonly IMedicalHistoriesService _medicalHistoriesService;
-        private readonly IConversationRepository _conversationRepository;
-
         private readonly PhotoService _photoService;
+        private readonly IMedicalHistoriesService _medicalHistoriesService;
 
-        public UserController(IUserService userService, IDoctorService doctorService,
-            ISpecialtyService specialtyService, IAppointmentService appointmentService,
-            IPatientService patientService,
-            IMedicalHistoriesService medicalHistoriesService,
-            IConversationRepository conversationRepository, PhotoService photoService
-            , IHttpClientFactory httpClientFactory)
+        public UserController(PhotoService photoService, IHttpClientFactory httpClientFactory, IMedicalHistoriesService medicalHistoriesService)
         {
-            _userService = userService;
-            _doctorService = doctorService;
-            _specialtyService = specialtyService;
-            _appointmentService = appointmentService;
-            _patientService = patientService;
-            _medicalHistoriesService = medicalHistoriesService;
-            _conversationRepository = conversationRepository;
             _photoService = photoService;
             _httpClient = httpClientFactory.CreateClient("APIClient");
+            _medicalHistoriesService = medicalHistoriesService;
         }
         public async Task<IActionResult> Index()
         {
@@ -312,15 +294,13 @@ namespace HealthBookingSystem.Controllers
             {
                 return RedirectToAction("Index", "Login"); 
             }
-
-            var conversation = await _conversationRepository.GetConversationsByPatientId(currentUser.Value); 
+            var conversation = await _httpClient.GetFromJsonAsync<List<ConversationDto>>($"ApiConversation/GetConversationsByPatient/{currentUser.Value}");
 
             if (conversation == null)
             {
                 return RedirectToAction("Index", "Home"); 
             }
-
-            var patient = await _patientService.GetByUserIdAsync(currentUser.Value);
+            var patient = await _httpClient.GetFromJsonAsync<PatientDTO>($"patients/{currentUser.Value}?$expand=User,Appointments($expand=DoctorUser($expand=User),MedicalRecords),MedicalHistories");
 
             ViewData["PatientId"] = currentUser.Value;
             ViewData["ConversationId"] = conversationId; 
@@ -346,6 +326,9 @@ namespace HealthBookingSystem.Controllers
                 return RedirectToAction("Index", "Login");
             }
             var patient = await _httpClient.GetFromJsonAsync<PatientDTO>($"Patients/{currentUser.Value}?$expand=User");
+
+            //ViewBag.MedicalHistory = await _httpClient.GetFromJsonAsync<List<MedicalHistory>>($"MedicalHistories/{currentUser.Value}");
+
             ViewBag.MedicalHistory = await _medicalHistoriesService.GetHistoryByUserId(currentUser.Value);
             return View(patient);
         }

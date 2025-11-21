@@ -11,13 +11,9 @@ namespace HealthBookingSystem.Controllers
 {
     public class RegisterController : Controller
     {
-        private readonly IUserService _userService;
-        private readonly IPatientService _patientService;
         private readonly HttpClient _httpClient;
-        public RegisterController(IUserService userService, IPatientService patientService, IHttpClientFactory httpClientFactory)
+        public RegisterController(IHttpClientFactory httpClientFactory)
         {
-            _userService = userService;
-            _patientService = patientService;
             _httpClient = httpClientFactory.CreateClient("APIClient");
         }
         public IActionResult Index()

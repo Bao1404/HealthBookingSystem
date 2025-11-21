@@ -10,11 +10,10 @@ namespace HealthCareSystem.Controllers
     [ApiController]
     public class ApiConversationController : ControllerBase
     {
-        private readonly IConversationRepository _conversationRepository;
-
-        public ApiConversationController(IConversationRepository conversationRepository)
+        private readonly HttpClient _httpClient;
+        public ApiConversationController(IHttpClientFactory httpClientFactory)
         {
-            _conversationRepository = conversationRepository;
+            _httpClient = httpClientFactory.CreateClient("APIClient");
         }
 
         [HttpGet("doctor/{doctorId}")]
@@ -22,7 +21,7 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var conversations = await _conversationRepository.GetConversationsByDoctorId(doctorId);
+                var conversations = await _httpClient.GetFromJsonAsync<List<ConversationDto>>($"ApiConversation/GetConversationsByDoctor/{doctorId}");
 
                 var result = conversations.Select(c => new ConversationDto
                 {
@@ -63,7 +62,7 @@ namespace HealthCareSystem.Controllers
         {
             try
             {
-                var conversations = await _conversationRepository.GetConversationsByPatientId(patientID);
+                var conversations = await _httpClient.GetFromJsonAsync<List<ConversationDto>>($"ApiConversation/GetConversationsByPatient/{patientID}");
 
                 var result = conversations.Select(c => new ConversationDto
                 {
@@ -135,7 +134,8 @@ namespace HealthCareSystem.Controllers
             try
             {
                 // Tìm cuộc trò chuyện giữa bệnh nhân và bác sĩ
-                var conversation = await _conversationRepository.FindConversationByPatientIdAndDoctorId((int)patientId, doctorId);
+                var response = await _httpClient.PostAsJsonAsync("ApiConversation/FindConversationByPatientIdAndDoctorId", new { patientId = (int)patientId, doctorId = doctorId });
+                var conversation = await response.Content.ReadFromJsonAsync<ConversationDto>();
 
                 if (conversation != null)
                 {

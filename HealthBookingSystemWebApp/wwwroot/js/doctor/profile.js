@@ -93,33 +93,6 @@ function editSchedule() {
 }
 
 function changeAvatar() {
-    const input = document.createElement("input")
-    input.type = "file"
-    input.accept = "image/*"
-    input.onchange = (e) => {
-        const file = e.target.files[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onload = (e) => {
-                // Update avatar display
-                document.querySelector(".profile-avatar-xl").src = e.target.result
-                document.querySelector(".user-avatar").src = e.target.result
-
-                // Save to localStorage (in real app, upload to server)
-                localStorage.setItem("doctorAvatar", e.target.result)
-
-                // Upload avatar to server via AJAX
-                uploadAvatarToServer(file);
-
-                //showNotification("Avatar updated successfully!", "success")
-            }
-            reader.readAsDataURL(file)
-        }
-    }
-    input.click()
-}
-
-function changeAvatar() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
